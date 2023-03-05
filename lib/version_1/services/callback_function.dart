@@ -70,6 +70,8 @@ Future<bool> onOtpRequest(String email) async {
 }
 
 Future<void> onPasswordReset(String email, String password) async {
+  debugPrint(email);
+  debugPrint(password);
   await FirebaseFirestore.instance
       .collection('logindata')
       .doc(email)
