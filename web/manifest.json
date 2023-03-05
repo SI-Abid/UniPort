@@ -1,11 +1,11 @@
 {
-    "name": "uniport",
-    "short_name": "uniport",
+    "name": "UniPort",
+    "short_name": "UniPort",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#FFFFFF",
-    "description": "A new Flutter project.",
+    "description": "Flutter web app",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
