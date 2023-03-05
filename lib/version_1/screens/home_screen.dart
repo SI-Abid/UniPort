@@ -112,6 +112,7 @@ class HomeScreen extends StatelessWidget {
                           future: FirebaseFirestore.instance
                               .collection('users')
                               .where('usertype', isEqualTo: 'teacher')
+                              .where('approved', isEqualTo: true)
                               .get(),
                           builder:
                               (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -121,6 +122,7 @@ class HomeScreen extends StatelessWidget {
                                 teacherList.add(User.fromJson(
                                     doc.data() as Map<String, dynamic>));
                               }
+                              print(teacherList);
                               return AssignAdvisor(teacherList: teacherList);
                             }
                             return const LoadingScreen();

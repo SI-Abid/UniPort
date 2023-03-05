@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         '/groupChat': (context) => const GroupChat(),
         '/assignedBatch': (context) => const AssignedBatchScreen(),
       },
-      initialRoute: '/welcome',
+      // initialRoute: '/welcome',
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

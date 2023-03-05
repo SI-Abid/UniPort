@@ -20,7 +20,7 @@ Future<void> initiate() async {
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
   prefs = await SharedPreferences.getInstance();
-  google = GoogleSignIn(scopes: <String>[]);
+  google = GoogleSignIn(scopes: <String>[], clientId: GoogleToken.googleClientId);
   // print(prefs.getString('user'));
   // await prefs.clear();
   loggedInUser = User();
@@ -160,7 +160,7 @@ String formatTime(int miliseconds) {
 String? emailValidator(String? email) {
   // Regular expression pattern for matching email // character+.+_+digit
   String pattern = r'^[a-zA-Z0-9._]+@lus.ac.bd$';
-  // pattern = r'^[a-zA-Z0-9._]+@gmail.com$';
+  pattern = r'^[a-zA-Z0-9._]+@gmail.com$';
   final regex = RegExp(pattern);
   if (!regex.hasMatch(email!)) {
     // If the email is not valid, print an error message

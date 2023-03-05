@@ -9,20 +9,14 @@ import 'providers.dart';
 
 Future<String> onLoginWithGoogle() async {
   try {
-    if(kIsWeb)
-    {
-      final authProvider = GoogleAuthProvider();
-      final authResult = await FirebaseAuth.instance.signInWithPopup(authProvider);
-      final creds = authResult.credential as GoogleAuthProvider;
-      
-    }
     final creds = await google
         .signIn()
         .then((value) => value!.authentication)
         .then((value) => GoogleAuthProvider.credential(
             accessToken: value.accessToken, idToken: value.idToken));
-
+    print('google $creds');
     final creden = await FirebaseAuth.instance.signInWithCredential(creds);
+    print('Firebase $creden');
     // print('google $creds');
     // print('firebase $creden');
     loggedInUser.email = creden.user!.email;

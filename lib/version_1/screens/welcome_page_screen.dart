@@ -32,15 +32,15 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
       child: Scaffold(
         backgroundColor: ColorConstant.gray100,
         body: Container(
-          padding: EdgeInsets.only(top: 48, bottom: 48),
+          padding: const EdgeInsets.only(top: 48, bottom: 48),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Image.asset('assets/images/img_152keylinesquare.png'),
-              Padding(
+              const Padding(
                 padding: EdgeInsets.only(top: 15),
-                child: const AppTitle(),
+                child: AppTitle(),
               ),
               const Spacer(),
               SizedBox(
@@ -52,13 +52,13 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 5),
+                        padding: const EdgeInsets.only(top: 5),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Image.asset('assest/images/img_group114.svg'),
+                            Image.asset('assets/images/img_group114.svg'),
                             Padding(
-                              padding: EdgeInsets.only(top: 10,bottom: 8),
+                              padding: const EdgeInsets.only(top: 10,bottom: 8),
                               child: Text(
                                 "tripleS",
                                 overflow: TextOverflow.ellipsis,
@@ -76,7 +76,7 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
                     Align(
                       alignment: Alignment.topRight,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 30),
+                        padding: const EdgeInsets.only(right: 30),
                         child: Text(
                           "from",
                           overflow: TextOverflow.ellipsis,

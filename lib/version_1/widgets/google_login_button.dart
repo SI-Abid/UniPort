@@ -34,6 +34,7 @@ class GoogleLoginButton extends StatelessWidget {
                     } else if (snapshot.data == 'new user') {
                       return const PersonalInfoScreen();
                     } else {
+                      print(snapshot.data);
                       Fluttertoast.showToast(
                         msg: 'Only academic email is allowed',
                         toastLength: Toast.LENGTH_SHORT,
