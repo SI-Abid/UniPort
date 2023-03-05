@@ -192,6 +192,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       textInputAction: kIsWeb
                           ? TextInputAction.send
                           : TextInputAction.newline,
+                      onEditingComplete: _sendMessage,
                       maxLines: 4,
                       minLines: 1,
                       onTapOutside: (event) {
@@ -232,34 +233,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: IconButton(
-                      onPressed: () {
-                        String text = _controller.text.trim();
-                        _controller.clear();
-                        if (text.isEmpty) {
-                          return;
-                        }
-                        final message = Message(
-                          sender: loggedInUser.uid,
-                          message: text,
-                          createdAt: DateTime.now().millisecondsSinceEpoch,
-                        );
-                        FirebaseFirestore.instance
-                            .collection('chats')
-                            .doc(chatId)
-                            .set({
-                          'users': [
-                            loggedInUser.toJson(),
-                            messageSender.toJson()
-                          ],
-                          'messages': FieldValue.arrayUnion([message.toJson()])
-                        }, SetOptions(merge: true)).then((value) {
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 100),
-                            curve: Curves.easeOut,
-                          );
-                        });
-                      },
+                      onPressed: _sendMessage,
                       icon: const Icon(
                         Icons.send,
                         color: Colors.white,
@@ -273,5 +247,28 @@ class _MessageScreenState extends State<MessageScreen> {
         ),
       ),
     );
+  }
+
+  void _sendMessage() {
+    String text = _controller.text.trim();
+    _controller.clear();
+    if (text.isEmpty) {
+      return;
+    }
+    final message = Message(
+      sender: loggedInUser.uid,
+      message: text,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+    );
+    FirebaseFirestore.instance.collection('chats').doc(chatId).set({
+      'users': [loggedInUser.toJson(), messageSender.toJson()],
+      'messages': FieldValue.arrayUnion([message.toJson()])
+    }, SetOptions(merge: true)).then((value) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+      );
+    });
   }
 }
