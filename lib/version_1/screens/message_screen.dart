@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -184,6 +185,13 @@ class _MessageScreenState extends State<MessageScreen> {
                 children: [
                   Expanded(
                     child: TextField(
+                      textCapitalization: TextCapitalization.sentences,
+                      autocorrect: true,
+                      autofillHints: const [AutofillHints.name],
+                      enableSuggestions: true,
+                      textInputAction: kIsWeb
+                          ? TextInputAction.send
+                          : TextInputAction.newline,
                       maxLines: 4,
                       minLines: 1,
                       onTapOutside: (event) {

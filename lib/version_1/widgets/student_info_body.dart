@@ -58,6 +58,7 @@ class _StudentInfoBodyState extends State<StudentInfoBody> {
                 controller: sectionController,
                 hintText: 'Section',
                 formValidator: sectionValidator,
+                textCapitalization: TextCapitalization.characters,
               ),
               const SizedBox(height: 5),
               // Should be Batch

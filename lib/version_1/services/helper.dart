@@ -160,7 +160,7 @@ String formatTime(int miliseconds) {
 String? emailValidator(String? email) {
   // Regular expression pattern for matching email // character+.+_+digit
   String pattern = r'^[a-zA-Z0-9._]+@lus.ac.bd$';
-  pattern = r'^[a-zA-Z0-9._]+@gmail.com$';
+  pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z.]+$';
   final regex = RegExp(pattern);
   if (!regex.hasMatch(email!)) {
     // If the email is not valid, print an error message
