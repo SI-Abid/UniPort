@@ -20,7 +20,7 @@ Future<void> initiate() async {
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
   prefs = await SharedPreferences.getInstance();
-  google = GoogleSignIn(scopes: <String>[], clientId: GoogleToken.googleClientId);
+  google = GoogleSignIn(scopes: <String>[]);
   // print(prefs.getString('user'));
   // await prefs.clear();
   loggedInUser = User();
@@ -40,12 +40,12 @@ Future<void> initiate() async {
 
 Future<bool> createUser(String password) async {
   // save user details to firestore
-  print('creating user ${loggedInUser.toJson()}');
+  // print('creating user ${loggedInUser.toJson()}');
   try {
     // final creds = await FirebaseFirestore.instance.collection('logindata').doc(loggedInUser.email).get();
     final creds = await google.currentUser!.authentication;
     // print(creds);
-    final creden = await FirebaseAuth.instance.signInWithCredential(
+    await FirebaseAuth.instance.signInWithCredential(
         GoogleAuthProvider.credential(
             accessToken: creds.accessToken, idToken: creds.idToken));
     // print('firebase $creden');
@@ -57,7 +57,7 @@ Future<bool> createUser(String password) async {
     await signOut();
     return true;
   } catch (e) {
-    print(e);
+    debugPrint(e.toString());
     return false;
   }
 }
@@ -88,7 +88,7 @@ Future<bool> saveUser() async =>
 
 Future<bool> loadUser() async {
   String? user = prefs.getString('user');
-  print('loadUser -> $user');
+  debugPrint('loadUser -> $user', wrapWidth: 1024);
   if (user == null) {
     try {
       await FirebaseFirestore.instance

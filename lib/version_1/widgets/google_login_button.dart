@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:uniport/version_1/services/providers.dart';
 
 import '../screens/screens.dart';
 import '../services/callback_function.dart';
@@ -30,11 +31,24 @@ class GoogleLoginButton extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.data == 'success') {
-                      return const HomeScreen();
+                      if(loggedInUser.approved==true){
+                        return const HomeScreen();
+                      }
+                      Fluttertoast.showToast(
+                        msg: 'Your account is not approved yet',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      signOut();
+                      return const LoginScreen();
                     } else if (snapshot.data == 'new user') {
                       return const PersonalInfoScreen();
                     } else {
-                      print(snapshot.data);
+                      debugPrint(snapshot.data);
                       Fluttertoast.showToast(
                         msg: 'Only academic email is allowed',
                         toastLength: Toast.LENGTH_SHORT,

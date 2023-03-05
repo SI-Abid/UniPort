@@ -27,42 +27,51 @@ class ChatScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('chats')
-            .where(
-              'users',
-              arrayContains: loggedInUser.toJson(),
-            )
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingScreen();
-          }
-          List<Chat> chatList = [];
-          for (var element in snapshot.data!.docs) {
-            final data = element.data();
-            data['chatId'] = element.id;
-            chatList.add(Chat.fromJson(data));
-          }
-          chatList.sort((a, b) {
-            final aTime = a.lastMessage.createdAt;
-            final bTime = b.lastMessage.createdAt;
-            return bTime.compareTo(aTime);
-          });
-          // print(chatDocs.length);
-          return ListView.builder(
-            itemCount: chatList.length,
-            itemBuilder: (context, index) {
-              Chat chat = chatList[index];
-              List<User> users = chat.users;
-              users.removeWhere((element) => element.uid == loggedInUser.uid);
-              User messageSender = users.first;
-              List<Message> messageList = chat.messages;
-              return ChatTile(data: messageList, messageSender: messageSender);
+      body: Container(
+        alignment: Alignment.center,
+        width: double.infinity,
+        child: SizedBox(
+          width: 500,
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('chats')
+                .where(
+                  'users',
+                  arrayContains: loggedInUser.toJson(),
+                )
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingScreen();
+              }
+              List<Chat> chatList = [];
+              for (var element in snapshot.data!.docs) {
+                final data = element.data();
+                data['chatId'] = element.id;
+                chatList.add(Chat.fromJson(data));
+              }
+              chatList.sort((a, b) {
+                final aTime = a.lastMessage.createdAt;
+                final bTime = b.lastMessage.createdAt;
+                return bTime.compareTo(aTime);
+              });
+              // print(chatDocs.length);
+              return ListView.builder(
+                itemCount: chatList.length,
+                itemBuilder: (context, index) {
+                  Chat chat = chatList[index];
+                  List<User> users = chat.users;
+                  users.removeWhere(
+                      (element) => element.uid == loggedInUser.uid);
+                  User messageSender = users.first;
+                  List<Message> messageList = chat.messages;
+                  return ChatTile(
+                      data: messageList, messageSender: messageSender);
+                },
+              );
             },
-          );
-        },
+          ),
+        ),
       ),
       backgroundColor: const Color(0xfff5f5f5),
       floatingActionButton: FloatingActionButton(

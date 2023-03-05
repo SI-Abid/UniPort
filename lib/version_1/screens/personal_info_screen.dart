@@ -148,7 +148,7 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
                   loggedInUser.firstName = fname;
                   loggedInUser.lastName = lname;
                   loggedInUser.contact = std;
-                  print('Personal page: $loggedInUser');
+                  // print('Personal page: $loggedInUser');
                   Navigator.push(
                     context,
                     MaterialPageRoute(

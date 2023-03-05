@@ -29,7 +29,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: AppTitle(title: 'ADVISOR GROUP CHAT'),
+        title: const AppTitle(title: 'ADVISOR GROUP CHAT'),
         leadingWidth: 24,
         iconTheme: IconThemeData(color: Colors.teal.shade800),
         backgroundColor: Colors.transparent,

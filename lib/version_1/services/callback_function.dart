@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -14,9 +13,9 @@ Future<String> onLoginWithGoogle() async {
         .then((value) => value!.authentication)
         .then((value) => GoogleAuthProvider.credential(
             accessToken: value.accessToken, idToken: value.idToken));
-    print('google $creds');
+    // print('google $creds');
     final creden = await FirebaseAuth.instance.signInWithCredential(creds);
-    print('Firebase $creden');
+    // print('Firebase $creden');
     // print('google $creds');
     // print('firebase $creden');
     loggedInUser.email = creden.user!.email;
@@ -37,7 +36,7 @@ Future<String> onLoginWithGoogle() async {
     });
     loggedInUser.uid = FirebaseAuth.instance.currentUser!.uid;
     loggedInUser.photoUrl = FirebaseAuth.instance.currentUser!.photoURL;
-    print('User $loggedInUser');
+    // print('User $loggedInUser');
     // String docId = Crypt.sha256(googleUser.email).toString().substring(3, 18);
     return await loadUser() ? 'success' : 'new user';
     // return creden.additionalUserInfo!.isNewUser ? 'new user' : 'success';
@@ -47,8 +46,8 @@ Future<String> onLoginWithGoogle() async {
 }
 
 Future<bool> onLoginWithEmail(String email, String password) async {
-  print('logging in with $email and $password');
-  print('User $loggedInUser');
+  // print('logging in with $email and $password');
+  // print('User $loggedInUser');
   try {
     await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);

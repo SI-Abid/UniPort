@@ -101,7 +101,7 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   loggedInUser.designation = designation;
                   loggedInUser.department = dept;
                   loggedInUser.isHod = checkbox.isChecked;
-                  print('Teacher page: $loggedInUser');
+                  debugPrint('Teacher page: $loggedInUser', wrapWidth: 1024);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
