@@ -126,7 +126,7 @@ class MySearchDelegate extends SearchDelegate {
             Navigator.pushReplacementNamed(
               context,
               '/message',
-              arguments: suggestions[index],
+              arguments: suggestions[index].toMessageSender(),
             );
           },
         );

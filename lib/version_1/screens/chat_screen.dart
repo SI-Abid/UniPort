@@ -12,7 +12,7 @@ class ChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print(loggedInUser);
+    debugPrint(loggedInUser.toString());
     return Scaffold(
       appBar: AppBar(
         title: const AppTitle(title: 'CHAT'),
@@ -21,7 +21,8 @@ class ChatScreen extends StatelessWidget {
         actions: [
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Avatar(messageSender: loggedInUser, size: 22),
+            child:
+                Avatar(messageSender: loggedInUser.toMessageSender(), size: 22),
           ),
         ],
         backgroundColor: Colors.transparent,
@@ -37,7 +38,7 @@ class ChatScreen extends StatelessWidget {
                 .collection('chats')
                 .where(
                   'users',
-                  arrayContains: loggedInUser.toJson(),
+                  arrayContains: loggedInUser.toMessageSender().toJson(),
                 )
                 .snapshots(),
             builder: (context, snapshot) {
@@ -55,15 +56,15 @@ class ChatScreen extends StatelessWidget {
                 final bTime = b.lastMessage.createdAt;
                 return bTime.compareTo(aTime);
               });
-              // print(chatDocs.length);
+              // print(chatList);
               return ListView.builder(
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   Chat chat = chatList[index];
-                  List<User> users = chat.users;
+                  List<MessageSender> users = chat.users;
                   users.removeWhere(
                       (element) => element.uid == loggedInUser.uid);
-                  User messageSender = users.first;
+                  MessageSender messageSender = users.first;
                   List<Message> messageList = chat.messages;
                   return ChatTile(
                       data: messageList, messageSender: messageSender);

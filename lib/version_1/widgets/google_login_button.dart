@@ -21,6 +21,11 @@ class GoogleLoginButton extends StatelessWidget {
           backgroundColor: MaterialStateProperty.all<Color>(
             Colors.white,
           ),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
         ),
         onPressed: () => {
           Navigator.pushAndRemoveUntil(
@@ -30,8 +35,11 @@ class GoogleLoginButton extends StatelessWidget {
                 future: onLoginWithGoogle(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.data == 'canceled') {
+                      return const LoginScreen();
+                    }
                     if (snapshot.data == 'success') {
-                      if(loggedInUser.approved==true){
+                      if (loggedInUser.approved == true) {
                         return const HomeScreen();
                       }
                       Fluttertoast.showToast(

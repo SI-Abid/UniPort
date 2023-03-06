@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         '/loading': (context) => const LoadingScreen(),
         '/chat': (context) => const ChatScreen(),
         '/message': (context) => MessageScreen(
-            messageSender: ModalRoute.of(context)!.settings.arguments as User),
+            messageSender: ModalRoute.of(context)!.settings.arguments as MessageSender),
         '/reportView': (context) => const ReportViewScreen(),
         '/studentReport': (context) => StudentReportScreen(),
         '/studentApproval': (context) => const StudentApproval(),
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         '/groupChat': (context) => const GroupChat(),
         '/assignedBatch': (context) => const AssignedBatchScreen(),
       },
-      initialRoute: '/welcome',
+      // initialRoute: '/welcome',
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

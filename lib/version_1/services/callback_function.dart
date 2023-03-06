@@ -8,11 +8,19 @@ import 'providers.dart';
 
 Future<String> onLoginWithGoogle() async {
   try {
-    final creds = await google
-        .signIn()
-        .then((value) => value!.authentication)
-        .then((value) => GoogleAuthProvider.credential(
-            accessToken: value.accessToken, idToken: value.idToken));
+    final signIn = await google.signIn();
+    if(signIn == null) return 'cancelled';
+    debugPrint('google sign in $signIn');
+    // await signIn!.clearAuthCache();
+    final auth = await signIn.authentication;
+    debugPrint('google auth ${auth.idToken}');
+    final creds = OAuthCredential(
+      providerId: 'google.com',
+      accessToken: auth.accessToken,
+      idToken: auth.idToken,
+      signInMethod: 'google.com',
+    );
+    debugPrint('google authcreds $creds');
     // print('google $creds');
     final creden = await FirebaseAuth.instance.signInWithCredential(creds);
     // print('Firebase $creden');
@@ -32,7 +40,7 @@ Future<String> onLoginWithGoogle() async {
         .doc(creden.user!.email)
         .set({
       'idToken': creds.idToken,
-      'accessToken': creds.accessToken,
+      // 'accessToken': creds.accessToken,
     });
     loggedInUser.uid = FirebaseAuth.instance.currentUser!.uid;
     loggedInUser.photoUrl = FirebaseAuth.instance.currentUser!.photoURL;

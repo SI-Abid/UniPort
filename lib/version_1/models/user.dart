@@ -1,3 +1,5 @@
+import 'message_sender.dart';
+
 class User {
   // common data
   String? usertype;
@@ -87,5 +89,15 @@ class User {
   @override
   String toString() {
     return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod}';
+  }
+  MessageSender toMessageSender() {
+    return MessageSender(
+      uid: uid,
+      email: email,
+      photoUrl: photoUrl,
+      firstName: firstName,
+      lastName: lastName,
+      usertype: usertype,
+    );
   }
 }

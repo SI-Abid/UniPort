@@ -7,9 +7,40 @@ import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.debug = false});
   final bool debug;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    // NOTE: for testing
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final isBg = state == AppLifecycleState.paused;
+    final isClosed = state == AppLifecycleState.detached;
+    final isScreen = state == AppLifecycleState.resumed;
+    isBg || isScreen==true || isClosed==false ?
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(loggedInUser.uid)
+        .update({'online': isScreen, 'lastSeen': DateTime.now().millisecondsSinceEpoch})
+    : FirebaseFirestore.instance
+        .collection('users')
+        .doc(loggedInUser.uid)
+        .update({'online': isScreen, 'lastSeen': DateTime.now().millisecondsSinceEpoch});
+    debugPrint('HomeScreen: $state');
+  }
+
   @override
   Widget build(BuildContext context) {
     final double ratio = MediaQuery.of(context).size.aspectRatio;
@@ -48,15 +79,15 @@ class HomeScreen extends StatelessWidget {
         width: double.infinity,
         child: SizedBox(
           // color: Colors.amber,
-          width: ratio < 1? 450 : 650,
+          width: ratio < 1 ? 450 : 650,
           // padding: const EdgeInsets.symmetric(horizontal: 20),
           child: GridView.count(
             primary: false,
             padding: const EdgeInsets.all(20),
             crossAxisSpacing: 20,
             mainAxisSpacing: 20,
-            crossAxisCount: ratio < 1? 2 : 3,
-            childAspectRatio: ratio < 1? 0.95 : 0.9,
+            crossAxisCount: ratio < 1 ? 2 : 3,
+            childAspectRatio: ratio < 1 ? 0.95 : 0.9,
             children: [
               // NOTE: for all users
               const CustomCard(
@@ -66,14 +97,14 @@ class HomeScreen extends StatelessWidget {
                   actionName: 'MESSAGE',
                   routeName: '/chat'),
               // NOTE: for students
-              if (loggedInUser.usertype == 'student' || debug)
+              if (loggedInUser.usertype == 'student' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/anonymous.svg',
                     title: 'CHAT',
                     subtitle: 'ANONYMOUS',
                     actionName: 'REPORT',
                     routeName: '/studentReport'),
-              if (loggedInUser.usertype == 'student' || debug)
+              if (loggedInUser.usertype == 'student' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/group_chat.svg',
                     title: 'GROUP CHAT',
@@ -81,14 +112,14 @@ class HomeScreen extends StatelessWidget {
                     actionName: 'MESSAGE',
                     routeName: '/groupChat'),
               // NOTE: for teachers
-              if (loggedInUser.usertype == 'teacher' || debug)
+              if (loggedInUser.usertype == 'teacher' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/assigned_batch.svg',
                     title: 'ASSIGNED BATCH',
                     subtitle: 'GROUP CHAT',
                     actionName: 'MESSAGE',
                     routeName: '/assignedBatch'),
-              if (loggedInUser.usertype == 'teacher' || debug)
+              if (loggedInUser.usertype == 'teacher' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/student.svg',
                     title: 'STUDENTS',
@@ -96,14 +127,14 @@ class HomeScreen extends StatelessWidget {
                     actionName: 'APPROVE',
                     routeName: '/studentApproval'),
               // NOTE: for HODs
-              if (loggedInUser.isHod == true || debug)
+              if (loggedInUser.isHod == true || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/teacher.svg',
                     title: 'TEACHERS',
                     subtitle: 'PENDING',
                     actionName: 'APPROVE',
                     routeName: '/teacherApproval'),
-              if (loggedInUser.isHod == true || debug)
+              if (loggedInUser.isHod == true || widget.debug)
                 CustomCard(
                   iconPath: 'assets/icon/batch_advisor.svg',
                   title: 'ADVISOR',
@@ -140,7 +171,7 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-              if (loggedInUser.isHod == true || debug)
+              if (loggedInUser.isHod == true || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/anonymous.svg',
                     title: 'REPORTS',
@@ -152,7 +183,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       backgroundColor:
-          debug ? Colors.deepPurple.shade100 : const Color(0xfff5f5f5),
+          widget.debug ? Colors.deepPurple.shade100 : const Color(0xfff5f5f5),
     );
   }
 }

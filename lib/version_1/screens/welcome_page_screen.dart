@@ -20,7 +20,7 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
   void navigateToNextScreen() {
     Future.delayed(
       const Duration(
-        seconds: 6,
+        seconds: 3,
       ),
       () => Navigator.pop(context),
     );

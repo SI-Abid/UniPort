@@ -9,7 +9,7 @@ class ChatTile extends StatelessWidget {
   const ChatTile({super.key, required this.data, required this.messageSender});
 
   final List<Message> data;
-  final User messageSender;
+  final MessageSender messageSender;
 
   @override
   Widget build(BuildContext context) {

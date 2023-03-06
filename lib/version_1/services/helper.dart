@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_auth/email_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,24 @@ Future<void> initiate() async {
   // await prefs.clear();
   loggedInUser = User();
   await loadUser();
+  FirebaseAuth.instance.authStateChanges().listen((event) {
+    debugPrint('auth state changed $event');
+    if (event != null) {
+      FirebaseFirestore.instance.collection('users').doc(event.uid).update({
+        'online': true,
+        'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      });
+    }
+    if (event == null && loggedInUser.uid != '') {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(loggedInUser.uid)
+          .update({
+        'online': false,
+        'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      });
+    }
+  });
   // FirebaseFirestore.instance.collection('users').snapshots().listen((event) {
   //   for (var element in event.docChanges) {
   //     if (element.type == DocumentChangeType.modified) {
@@ -128,9 +147,10 @@ Stream<List<Chat>> allChatStream() => FirebaseFirestore.instance
     .map((event) => event.docs.map((e) => Chat.fromJson(e.data())).toList());
 
 Future<void> signOut() async {
+  await FirebaseAuth.instance.signOut();
+  await Future.delayed(const Duration(seconds: 1));
   loggedInUser = User();
   await prefs.remove('user');
-  await FirebaseAuth.instance.signOut();
   await google.disconnect();
   await google.signOut();
   return Future.value();
