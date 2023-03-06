@@ -24,7 +24,7 @@ Future<void> initiate() async {
   google = GoogleSignIn(scopes: <String>[
     'email',
   ]);
-  print('user ${prefs.getString('user')}');
+  // print('user ${prefs.getString('user')}');
   // await prefs.clear();
   loggedInUser = User();
   await loadUser();
@@ -34,7 +34,7 @@ Future<void> initiate() async {
       final docRef =
           FirebaseFirestore.instance.collection('users').doc(event.uid);
       docRef.get().then((value) {
-        print('value $value');
+        // print('value $value');
         if (value.exists) {
           docRef.update({
             'online': true,

@@ -20,8 +20,8 @@ Future<String> onLoginWithGoogle() async {
       ),
     );
     // print('Firebase $creden');
-    print('google $creds');
-    print('firebase $creden');
+    // print('google $creds');
+    // print('firebase $creden');
     loggedInUser.email = creden.user!.email;
     // Commented out for the purpose of testing
     // if (!loggedInUser.email!.endsWith('@lus.ac.bd')) {

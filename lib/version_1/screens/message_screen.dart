@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
@@ -27,6 +31,8 @@ class _MessageScreenState extends State<MessageScreen> {
   int count = 0;
   bool profileViewed = false;
   bool isLoading = true;
+
+  bool _isUploading = false;
   @override
   void initState() {
     super.initState();
@@ -210,7 +216,9 @@ class _MessageScreenState extends State<MessageScreen> {
                           },
                         ),
                         if (profileViewed)
-                          ProfileCard(messageSender: messageSender)
+                          ProfileCard(messageSender: messageSender),
+                        if (_isUploading)
+                          const Center(child: CircularProgressIndicator())
                       ],
                     ),
                   ),
@@ -234,10 +242,7 @@ class _MessageScreenState extends State<MessageScreen> {
                             autocorrect: true,
                             autofillHints: const [AutofillHints.name],
                             enableSuggestions: true,
-                            textInputAction: kIsWeb
-                                ? TextInputAction.done
-                                : TextInputAction.newline,
-                            onEditingComplete: _sendMessage,
+                            textInputAction: TextInputAction.newline,
                             maxLines: 4,
                             minLines: 1,
                             onTapOutside: (event) {
@@ -269,14 +274,52 @@ class _MessageScreenState extends State<MessageScreen> {
                             ),
                           ),
                         ),
+                        // image send button
                         Container(
                           alignment: Alignment.center,
-                          margin: const EdgeInsets.only(left: 8, top: 8, bottom: 6),
+                          margin:
+                              const EdgeInsets.only(left: 8, top: 8, bottom: 6),
                           height: 40,
                           width: 40,
                           child: IconButton(
                             iconSize: 30,
-                            onPressed: _sendMessage,
+                            onPressed: () async {
+                              final ImagePicker picker = ImagePicker();
+
+                              // Picking multiple images
+                              final List<XFile> images =
+                                  await picker.pickMultiImage(imageQuality: 70);
+
+                              // uploading & sending image one by one
+                              for (var i in images) {
+                                debugPrint('Image Path: ${i.path}');
+                                setState(() => _isUploading = true);
+                                await sendChatImage(
+                                    widget.messageSender, File(i.path));
+                                setState(() => _isUploading = false);
+                              }
+                            },
+                            icon: Icon(
+                              Icons.image_rounded,
+                              color: Colors.teal.shade800,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          margin:
+                              const EdgeInsets.only(left: 8, top: 8, bottom: 6),
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            iconSize: 30,
+                            onPressed: () {
+                              String message = _controller.text.trim();
+                              if (message.isNotEmpty) {
+                                _sendMessage(message, 0);
+                                _controller.clear();
+                              }
+                            },
                             icon: Icon(
                               Icons.send_rounded,
                               color: Colors.teal.shade800,
@@ -292,16 +335,33 @@ class _MessageScreenState extends State<MessageScreen> {
           );
   }
 
-  void _sendMessage() {
-    String text = _controller.text.trim();
-    _controller.clear();
-    if (text.isEmpty) {
-      return;
-    }
+  // send image message
+  Future<void> sendChatImage(MessageSender chatUser, File file) async {
+    //getting image file extension
+    final ext = file.path.split('.').last;
+
+    //storage file ref with path
+    final ref = FirebaseStorage.instance.ref().child(
+        'images/${getChatId(chatUser.uid, loggedInUser.uid)}/${DateTime.now().millisecondsSinceEpoch}.$ext');
+
+    //uploading image
+    await ref
+        .putFile(file, SettableMetadata(contentType: 'image/$ext'))
+        .then((p0) {
+      debugPrint('Data Transferred: ${p0.bytesTransferred / 1000} kb');
+    });
+
+    //updating image in firestore database
+    final imageUrl = await ref.getDownloadURL();
+    _sendMessage(imageUrl, 1);
+  }
+
+  // send text message
+  void _sendMessage(String content, int type) {
     final message = Message(
-      type: 0,
+      type: type,
       sender: loggedInUser.uid,
-      content: text,
+      content: content,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     FirebaseFirestore.instance.collection('chats').doc(chatId).set({

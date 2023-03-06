@@ -35,7 +35,18 @@ class GoogleLoginButton extends StatelessWidget {
                 future: onLoginWithGoogle(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.data == 'canceled') {
+                    if (snapshot.data == 'invalid email') {
+                      debugPrint(snapshot.data);
+                      Fluttertoast.showToast(
+                        msg: 'Only academic email is allowed',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      signOut();
                       return const LoginScreen();
                     }
                     if (snapshot.data == 'success') {
@@ -56,17 +67,6 @@ class GoogleLoginButton extends StatelessWidget {
                     } else if (snapshot.data == 'new user') {
                       return const PersonalInfoScreen();
                     } else {
-                      debugPrint(snapshot.data);
-                      Fluttertoast.showToast(
-                        msg: 'Only academic email is allowed',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                      signOut();
                       return const LoginScreen();
                     }
                   }
