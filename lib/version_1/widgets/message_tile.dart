@@ -50,7 +50,7 @@ class MessageTile extends StatelessWidget {
                   : Colors.teal.shade200.withOpacity(0.5),
             ),
             child: Text(
-              message.message,
+              message.content,
               style: GoogleFonts.sen(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -62,10 +62,9 @@ class MessageTile extends StatelessWidget {
           Text(
             formatTime(message.createdAt),
             style: GoogleFonts.sen(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87
-            ),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87),
           ),
         ],
       ),

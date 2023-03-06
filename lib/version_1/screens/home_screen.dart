@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             crossAxisSpacing: 20,
             mainAxisSpacing: 20,
             crossAxisCount: ratio < 1 ? 2 : 3,
-            childAspectRatio: ratio < 1 ? 0.95 : 0.9,
+            childAspectRatio: ratio < 1 ? 0.75 : 0.95,
             children: [
               // NOTE: for all users
               const CustomCard(

@@ -1,29 +1,29 @@
 class Message {
-  final String message; // message content
-  final String sender;  // uid of the sender
-  final bool? seen;     // whether the message is seen or not
-  final int createdAt;  // timestamp of the message
+  final String content; // message content
+  final String sender; // uid of the sender
+  final int type; // 0 for text, 1 for image
+  final int createdAt; // timestamp of the message
   Message({
-    required this.message,
+    required this.content,
     required this.sender,
     required this.createdAt,
-    this.seen = false,
+    this.type = 0,
   });
   Map<String, dynamic> toJson() {
     return {
-      'message': message,
+      'content': content,
       'sender': sender,
       'createdAt': createdAt,
-      'seen': seen,
+      'type': type,
     };
   }
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      message: json['message'],
+      content: json['content'],
       sender: json['sender'],
       createdAt: json['createdAt'],
-      seen: json['seen'],
+      type: json['type'] ?? 0,
     );
   }
 }

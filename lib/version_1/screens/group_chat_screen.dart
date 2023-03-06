@@ -114,7 +114,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         }
                         final message = Message(
                           sender: loggedInUser.uid,
-                          message: text,
+                          content: text,
                           createdAt: DateTime.now().millisecondsSinceEpoch,
                         );
                         FirebaseFirestore.instance
@@ -210,7 +210,7 @@ class GroupMessageTile extends StatelessWidget {
                   : Colors.teal.shade200.withOpacity(0.5),
             ),
             child: Text(
-              message.message,
+              message.content,
               style: GoogleFonts.sen(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,

@@ -9,23 +9,19 @@ import 'providers.dart';
 Future<String> onLoginWithGoogle() async {
   try {
     final signIn = await google.signIn();
-    if(signIn == null) return 'cancelled';
-    debugPrint('google sign in $signIn');
-    // await signIn!.clearAuthCache();
-    final auth = await signIn.authentication;
-    debugPrint('google auth ${auth.idToken}');
-    final creds = OAuthCredential(
-      providerId: 'google.com',
-      accessToken: auth.accessToken,
-      idToken: auth.idToken,
-      signInMethod: 'google.com',
+    if (signIn == null) {
+      return 'cancelled';
+    }
+    final creds = await signIn.authentication;
+    final creden = await FirebaseAuth.instance.signInWithCredential(
+      GoogleAuthProvider.credential(
+        accessToken: creds.accessToken,
+        idToken: creds.idToken,
+      ),
     );
-    debugPrint('google authcreds $creds');
-    // print('google $creds');
-    final creden = await FirebaseAuth.instance.signInWithCredential(creds);
     // print('Firebase $creden');
-    // print('google $creds');
-    // print('firebase $creden');
+    print('google $creds');
+    print('firebase $creden');
     loggedInUser.email = creden.user!.email;
     // Commented out for the purpose of testing
     // if (!loggedInUser.email!.endsWith('@lus.ac.bd')) {
@@ -40,7 +36,7 @@ Future<String> onLoginWithGoogle() async {
         .doc(creden.user!.email)
         .set({
       'idToken': creds.idToken,
-      // 'accessToken': creds.accessToken,
+      'accessToken': creds.accessToken,
     });
     loggedInUser.uid = FirebaseAuth.instance.currentUser!.uid;
     loggedInUser.photoUrl = FirebaseAuth.instance.currentUser!.photoURL;

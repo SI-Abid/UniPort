@@ -302,54 +302,140 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                     ActionButton(
                       text: 'ASSIGN',
                       onPressed: () {
-                        if (selectedSection.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Please select at least one section',
-                                style: GoogleFonts.sen(
-                                  letterSpacing: 0.5,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color.fromARGB(255, 255, 69, 69),
-                                ),
-                              ),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 255, 69, 69)
-                                      .withOpacity(0.2),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+                        if (selectedTeacher == null) {
+                          Fluttertoast.showToast(
+                            msg: 'Please select a teacher',
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
+                          );
+                        } else if (selectedBatch == null) {
+                          Fluttertoast.showToast(
+                            msg: 'Please select a batch',
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
+                          );
+                        } else if (selectedSection.isEmpty) {
+                          Fluttertoast.showToast(
+                            msg: 'Please select at least one section',
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
                           );
                         } else {
+                          selectedSection.sort();
                           Message firstMessage = Message(
                             sender: selectedTeacher!.uid,
-                            message:
+                            content:
                                 'Hello, I am ${selectedTeacher!.name}, your advisor. You can ask me anything related to your academics.',
                             createdAt: DateTime.now().millisecondsSinceEpoch,
                           );
-                          FirebaseFirestore.instance
+                          final advisorGroupId =
+                              '${selectedTeacher!.uid}$selectedBatch';
+                          // if group already exists, warn the user
+                          // else create a new group
+                          final docRef = FirebaseFirestore.instance
                               .collection('advisor groups')
-                              .doc('${selectedTeacher!.uid}$selectedBatch')
-                              .set({
-                            'users': [selectedTeacher!.toJson()],
-                            'batch': selectedBatch,
-                            'sections': selectedSection,
-                            'chats': [firstMessage.toJson()],
-                          }, SetOptions(merge: true)).then(
-                            (value) {
-                              Fluttertoast.showToast(
-                                msg: 'Advisor assigned successfully',
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.green.withOpacity(0.8),
-                                textColor: Colors.white,
-                                fontSize: 16.0,
-                              );
-                              // Navigator.pop(context);
+                              .doc(advisorGroupId);
+                          docRef.get().then(
+                            (doc) {
+                              if (doc.exists) {
+                                final String assignedSections =
+                                    doc['sections'].join(', ');
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Warning'),
+                                    content: Text(
+                                      'This advisor is already assigned to the following sections: $assignedSections of batch $selectedBatch. Re-assigning will delete the existing group. Do you want to continue?',
+                                      style: GoogleFonts.sen(
+                                        letterSpacing: 0.5,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.normal,
+                                        color: const Color.fromARGB(
+                                            255, 24, 143, 121),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text('Continue'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          docRef.set({
+                                            'batch': selectedBatch,
+                                            'users': FieldValue.arrayUnion(
+                                                [selectedTeacher!.toJson()]),
+                                            'sections': FieldValue.arrayUnion(
+                                                selectedSection),
+                                            'chats': FieldValue.arrayUnion(
+                                                [firstMessage.toJson()]),
+                                          }).then(
+                                            (value) {
+                                              Fluttertoast.showToast(
+                                                msg:
+                                                    'Advisor assigned successfully',
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                gravity: ToastGravity.BOTTOM,
+                                                timeInSecForIosWeb: 1,
+                                                backgroundColor: Colors.green
+                                                    .withOpacity(0.8),
+                                                textColor: Colors.white,
+                                                fontSize: 16.0,
+                                              );
+                                              // Navigator.pop(context);
+                                              // clear the selected values
+                                              setState(() {
+                                                selectedSection.clear();
+                                              });
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                docRef.set({
+                                  'batch': selectedBatch,
+                                  'users': [selectedTeacher!.toJson()],
+                                  'sections': selectedSection,
+                                  'chats': [firstMessage.toJson()],
+                                }).then(
+                                  (value) {
+                                    Fluttertoast.showToast(
+                                      msg: 'Advisor assigned successfully',
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor:
+                                          Colors.green.withOpacity(0.8),
+                                      textColor: Colors.white,
+                                      fontSize: 16.0,
+                                    );
+                                    // Navigator.pop(context);
+                                    // clear the selected values
+                                    setState(() {
+                                      selectedSection.clear();
+                                    });
+                                  },
+                                );
+                              }
                             },
                           );
                         }

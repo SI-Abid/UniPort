@@ -62,6 +62,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 children: [
                   Avatar(messageSender: messageSender),
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         messageSender.name,
@@ -214,9 +215,16 @@ class _MessageScreenState extends State<MessageScreen> {
                     ),
                   ),
                   Container(
-                    color: const Color(0xfff5f5f5),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -263,18 +271,15 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                         Container(
                           alignment: Alignment.center,
-                          height: 50,
-                          width: 50,
-                          // padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.teal.shade800,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
+                          margin: const EdgeInsets.only(left: 8, top: 8, bottom: 6),
+                          height: 40,
+                          width: 40,
                           child: IconButton(
+                            iconSize: 30,
                             onPressed: _sendMessage,
-                            icon: const Icon(
-                              Icons.send,
-                              color: Colors.white,
+                            icon: Icon(
+                              Icons.send_rounded,
+                              color: Colors.teal.shade800,
                             ),
                           ),
                         ),
@@ -294,8 +299,9 @@ class _MessageScreenState extends State<MessageScreen> {
       return;
     }
     final message = Message(
+      type: 0,
       sender: loggedInUser.uid,
-      message: text,
+      content: text,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     FirebaseFirestore.instance.collection('chats').doc(chatId).set({

@@ -21,26 +21,51 @@ Future<void> initiate() async {
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
   prefs = await SharedPreferences.getInstance();
-  google = GoogleSignIn(scopes: <String>[]);
-  // print(prefs.getString('user'));
+  google = GoogleSignIn(scopes: <String>[
+    'email',
+  ]);
+  print('user ${prefs.getString('user')}');
   // await prefs.clear();
   loggedInUser = User();
   await loadUser();
   FirebaseAuth.instance.authStateChanges().listen((event) {
     debugPrint('auth state changed $event');
     if (event != null) {
-      FirebaseFirestore.instance.collection('users').doc(event.uid).update({
-        'online': true,
-        'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      final docRef =
+          FirebaseFirestore.instance.collection('users').doc(event.uid);
+      docRef.get().then((value) {
+        print('value $value');
+        if (value.exists) {
+          docRef.update({
+            'online': true,
+            'lastSeen': DateTime.now().millisecondsSinceEpoch
+          });
+        }
+        else{
+          docRef.set({
+            'online': true,
+            'lastSeen': DateTime.now().millisecondsSinceEpoch
+          }, SetOptions(merge: true));
+        }
       });
     }
     if (event == null && loggedInUser.uid != '') {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(loggedInUser.uid)
-          .update({
-        'online': false,
-        'lastSeen': DateTime.now().millisecondsSinceEpoch,
+      final docRef =
+          FirebaseFirestore.instance.collection('users').doc(loggedInUser.uid);
+      docRef.get().then((value) {
+        print('value $value');
+        if (value.exists) {
+          docRef.update({
+            'online': false,
+            'lastSeen': DateTime.now().millisecondsSinceEpoch
+          });
+        }
+        else{
+          docRef.set({
+            'online': false,
+            'lastSeen': DateTime.now().millisecondsSinceEpoch
+          }, SetOptions(merge: true));
+        }
       });
     }
   });
@@ -72,7 +97,7 @@ Future<bool> createUser(String password) async {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(loggedInUser.uid)
-        .set(loggedInUser.toJson());
+        .update(loggedInUser.toJson());
     await signOut();
     return true;
   } catch (e) {
@@ -117,9 +142,9 @@ Future<bool> loadUser() async {
           .then((value) {
         if (value.exists) {
           loggedInUser = User.fromJson(value.data()!);
+          prefs.setString('user', jsonEncode(loggedInUser.toJson()));
         }
       });
-      prefs.setString('user', jsonEncode(loggedInUser.toJson()));
     } catch (e) {
       return false;
     }

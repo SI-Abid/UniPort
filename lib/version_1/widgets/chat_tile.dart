@@ -36,10 +36,11 @@ class ChatTile extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          data.last.message,
+          data.last.type == 0 ? data.last.content : 'Image',
           softWrap: true,
           maxLines: 1,
           style: GoogleFonts.sen(
+            color: data.last.type == 0 ? Colors.black : Colors.teal.shade800,
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
