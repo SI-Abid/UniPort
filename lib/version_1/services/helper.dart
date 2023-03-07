@@ -53,7 +53,7 @@ Future<void> initiate() async {
       final docRef =
           FirebaseFirestore.instance.collection('users').doc(loggedInUser.uid);
       docRef.get().then((value) {
-        print('value $value');
+        debugPrint('value $value');
         if (value.exists) {
           docRef.update({
             'online': false,
