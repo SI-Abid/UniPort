@@ -43,12 +43,20 @@ class MessageTile extends StatelessWidget {
                     margin: isMe
                         ? const EdgeInsets.only(left: 55)
                         : const EdgeInsets.only(right: 55),
-                    padding: const EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      left: 15,
-                      right: 15,
-                    ),
+                    padding:
+                        message.content.contains(RegExp(r'[^\u0000-\u007F]'))
+                            ? const EdgeInsets.only(
+                                top: 8,
+                                bottom: 8,
+                                left: 10,
+                                right: 10,
+                              )
+                            : const EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 15,
+                                right: 15,
+                              ),
                     decoration: BoxDecoration(
                       borderRadius: isMe
                           ? const BorderRadius.only(
@@ -68,7 +76,10 @@ class MessageTile extends StatelessWidget {
                     child: Text(
                       message.content,
                       style: GoogleFonts.sen(
-                        fontSize: 16,
+                        fontSize: message.content
+                                .contains(RegExp(r'[^\u0000-\u007F]'))
+                            ? 22
+                            : 16,
                         fontWeight: FontWeight.w500,
                         color: isMe ? Colors.white : Colors.black,
                       ),
