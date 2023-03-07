@@ -15,7 +15,7 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
   @override
   void initState() {
     super.initState();
-    // navigateToNextScreen();
+    navigateToNextScreen();
   }
 
   void navigateToNextScreen() {
@@ -34,7 +34,6 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
         backgroundColor: const Color(0xfff5f5f5),
         body: Center(
           child: Container(
-            // color: Colors.amber,
             padding: const EdgeInsets.only(bottom: 48, top: 30),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -84,19 +83,6 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
                           ),
                         ),
                       ),
-                      // Align(
-                      //   alignment: Alignment.topRight,
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.only(right: 30),
-                      //     child: Text("from",
-                      //         overflow: TextOverflow.ellipsis,
-                      //         textAlign: TextAlign.left,
-                      //         style: GoogleFonts.sen(
-                      //           letterSpacing: 2,
-                      //           height: 1,
-                      //         )),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
