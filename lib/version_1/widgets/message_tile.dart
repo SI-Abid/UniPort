@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/models.dart';
@@ -15,8 +17,8 @@ class MessageTile extends StatelessWidget {
       padding: EdgeInsets.only(
         top: 4,
         bottom: 4,
-        left: isMe ? 0 : 12,
-        right: isMe ? 12 : 0,
+        left: isMe ? 0 : MediaQuery.of(context).size.width * 0.015,
+        right: isMe ? MediaQuery.of(context).size.width * 0.015 : 0,
       ),
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
@@ -25,38 +27,51 @@ class MessageTile extends StatelessWidget {
         // mainAxisAlignment: MainAxisAlignment.start,
         children: [
           message.type == 0
-              ? Container(
-                  margin: isMe
-                      ? const EdgeInsets.only(left: 55)
-                      : const EdgeInsets.only(right: 55),
-                  padding: const EdgeInsets.only(
-                    top: 10,
-                    bottom: 10,
-                    left: 15,
-                    right: 15,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: isMe
-                        ? const BorderRadius.only(
-                            topLeft: Radius.circular(23),
-                            topRight: Radius.circular(23),
-                            bottomLeft: Radius.circular(23),
-                          )
-                        : const BorderRadius.only(
-                            topLeft: Radius.circular(23),
-                            topRight: Radius.circular(23),
-                            bottomRight: Radius.circular(23),
-                          ),
-                    color: isMe
-                        ? Colors.teal.shade800
-                        : Colors.teal.shade200.withOpacity(0.5),
-                  ),
-                  child: Text(
-                    message.content,
-                    style: GoogleFonts.sen(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: isMe ? Colors.white : Colors.black,
+              ? GestureDetector(
+                  onLongPress: () {
+                    // text copy to clipboard
+                    Clipboard.setData(ClipboardData(text: message.content))
+                        .then((value) => Fluttertoast.showToast(
+                            msg: 'Copied to Clipboard',
+                            backgroundColor: Colors.grey.shade700,
+                            textColor: Colors.white,
+                            fontSize: 16,
+                            gravity: ToastGravity.BOTTOM,
+                            toastLength: Toast.LENGTH_SHORT));
+                  },
+                  child: Container(
+                    margin: isMe
+                        ? const EdgeInsets.only(left: 55)
+                        : const EdgeInsets.only(right: 55),
+                    padding: const EdgeInsets.only(
+                      top: 10,
+                      bottom: 10,
+                      left: 15,
+                      right: 15,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: isMe
+                          ? const BorderRadius.only(
+                              topLeft: Radius.circular(23),
+                              topRight: Radius.circular(23),
+                              bottomLeft: Radius.circular(23),
+                            )
+                          : const BorderRadius.only(
+                              topLeft: Radius.circular(23),
+                              topRight: Radius.circular(23),
+                              bottomRight: Radius.circular(23),
+                            ),
+                      color: isMe
+                          ? Colors.teal.shade800
+                          : Colors.teal.shade200.withOpacity(0.5),
+                    ),
+                    child: Text(
+                      message.content,
+                      style: GoogleFonts.sen(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: isMe ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
                 )

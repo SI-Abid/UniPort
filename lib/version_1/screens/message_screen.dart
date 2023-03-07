@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -32,6 +33,8 @@ class _MessageScreenState extends State<MessageScreen> {
   bool isLoading = true;
 
   bool _isUploading = false;
+  bool _showEmoji = false;
+
   @override
   void initState() {
     super.initState();
@@ -218,8 +221,6 @@ class _MessageScreenState extends State<MessageScreen> {
                                   count = messages.length;
                                 }
                                 return ListView.builder(
-                                  // dragStartBehavior: DragStartBehavior.down,
-                                  // reverse: true,
                                   controller: _scrollController,
                                   itemCount: messages.length,
                                   itemBuilder: (context, index) {
@@ -242,120 +243,166 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                       ),
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                // emoji button
-                                IconButton(
-                                  iconSize: 28,
-                                  icon: Icon(
-                                    Icons.emoji_emotions,
-                                    color: Colors.teal.shade800,
-                                  ),
-                                  onPressed: () {},
-                                ),
-                                Expanded(
-                                  child: TextField(
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    autocorrect: true,
-                                    autofillHints: const [AutofillHints.name],
-                                    enableSuggestions: true,
-                                    textInputAction: TextInputAction.newline,
-                                    maxLines: 4,
-                                    minLines: 1,
-                                    // if keyboard is open, scroll to bottom
-                                    onTap: () {
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: mq.width * 0.01),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  // emoji button
+                                  IconButton(
+                                    iconSize: 28,
+                                    icon: Icon(
+                                      Icons.emoji_emotions,
+                                      color: Colors.teal.shade800,
+                                    ),
+                                    onPressed: () {
                                       setState(() {
-                                        profileViewed = false;
+                                        FocusScope.of(context).unfocus();
+                                        _showEmoji = !_showEmoji;
                                       });
-                                      if (messages.isNotEmpty) {
-                                        SchedulerBinding.instance
-                                            .addPostFrameCallback((_) {
-                                          _scrollController.animateTo(
-                                            _scrollController
-                                                .position.maxScrollExtent,
-                                            duration: const Duration(
-                                                milliseconds: 250),
-                                            curve: Curves.easeOut,
-                                          );
-                                        });
-                                      }
                                     },
-                                    controller: _controller,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Type something...',
-                                      border: InputBorder.none,
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      textCapitalization:
+                                          TextCapitalization.sentences,
+                                      autocorrect: true,
+                                      enableSuggestions: true,
+                                      textInputAction: TextInputAction.newline,
+                                      maxLines: 4,
+                                      minLines: 1,
+                                      // if keyboard is open, scroll to bottom
+                                      onTap: () {
+                                        setState(() {
+                                          profileViewed = false;
+                                          _showEmoji = false;
+                                        });
+                                        if (messages.isNotEmpty) {
+                                          SchedulerBinding.instance
+                                              .addPostFrameCallback((_) {
+                                            _scrollController.animateTo(
+                                              _scrollController
+                                                  .position.maxScrollExtent,
+                                              duration: const Duration(
+                                                  milliseconds: 250),
+                                              curve: Curves.easeOut,
+                                            );
+                                          });
+                                        }
+                                      },
+                                      controller: _controller,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Type something...',
+                                        border: InputBorder.none,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                // image send button
-                                IconButton(
-                                  iconSize: 28,
-                                  onPressed: () async {
-                                    final ImagePicker picker = ImagePicker();
+                                  // image send button
+                                  IconButton(
+                                    padding: const EdgeInsets.all(0),
+                                    onPressed: () async {
+                                      final ImagePicker picker = ImagePicker();
 
-                                    // Picking multiple images
-                                    final List<XFile> images = await picker
-                                        .pickMultiImage(imageQuality: 70);
+                                      // Picking multiple images
+                                      final List<XFile> images = await picker
+                                          .pickMultiImage(imageQuality: 70);
 
-                                    // uploading & sending image one by one
-                                    for (var i in images) {
-                                      debugPrint('Image Path: ${i.path}');
-                                      setState(() => _isUploading = true);
-                                      await sendChatImage(
-                                          widget.messageSender, File(i.path));
-                                      setState(() => _isUploading = false);
-                                    }
-                                  },
-                                  icon: Icon(
-                                    Icons.image_rounded,
-                                    color: Colors.teal.shade800,
+                                      // uploading & sending image one by one
+                                      for (var i in images) {
+                                        debugPrint('Image Path: ${i.path}');
+                                        setState(() => _isUploading = true);
+                                        await sendChatImage(
+                                            widget.messageSender, File(i.path));
+                                        setState(() => _isUploading = false);
+                                      }
+                                    },
+                                    icon: Icon(
+                                      Icons.image_rounded,
+                                      color: Colors.teal.shade800,
+                                      size: 28,
+                                    ),
                                   ),
-                                ),
-                                IconButton(
-                                  iconSize: 28,
-                                  onPressed: null,
-                                  icon: Icon(Icons.camera_alt_rounded,
-                                      color: Colors.teal.shade800),
-                                ),
-                              ],
+                                  IconButton(
+                                    padding: const EdgeInsets.all(0),
+                                    onPressed: null,
+                                    icon: Icon(
+                                      Icons.camera_alt_rounded,
+                                      color: Colors.teal.shade800,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 3),
-                          child: MaterialButton(
-                            minWidth: 0,
-                            padding: const EdgeInsets.only(
-                                left: 10, right: 6, top: 10, bottom: 10),
-                            shape: const CircleBorder(),
-                            onPressed: () {
-                              String message = _controller.text.trim();
-                              if (message.isNotEmpty) {
-                                _sendMessage(message, 0);
-                                _controller.clear();
-                              }
-                            },
-                            color: Colors.teal.shade800,
-                            child: const Icon(
-                              Icons.send_rounded,
-                              color: Colors.white,
-                              size: 28,
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 3),
+                            child: MaterialButton(
+                              minWidth: 0,
+                              padding: const EdgeInsets.only(
+                                  left: 10, right: 6, top: 10, bottom: 10),
+                              shape: const CircleBorder(),
+                              onPressed: () {
+                                String message = _controller.text.trim();
+                                if (message.isNotEmpty) {
+                                  _sendMessage(message, 0);
+                                  _controller.clear();
+                                }
+                              },
+                              color: Colors.teal.shade800,
+                              child: const Icon(
+                                Icons.send_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: mq.width * 0.01),
-                      ],
+                        ],
+                      ),
                     ),
+                    if (_showEmoji)
+                      SizedBox(
+                        height: mq.height * .35,
+                        child: EmojiPicker(
+                          onBackspacePressed: () => setState(() {
+                            if (_controller.text.isNotEmpty) {
+                              _controller.text = _controller.text.characters
+                                  .toList()
+                                  .map((e) => e.toString())
+                                  .toList()
+                                  .sublist(
+                                      0, _controller.text.characters.length)
+                                  .join();
+                            }
+                          }),
+                          textEditingController: _controller,
+                          config: Config(
+                            emojiTextStyle: GoogleFonts.sen(
+                              fontSize: 20,
+                              color: Colors.black,
+                            ),
+                            checkPlatformCompatibility: true,
+                            backspaceColor: Colors.blueGrey.shade900,
+                            enableSkinTones: true,
+                            indicatorColor: Colors.teal.shade400,
+                            iconColorSelected: Colors.teal.shade400,
+                            buttonMode: ButtonMode.MATERIAL,
+                            iconColor: Colors.teal.shade800,
+                            bgColor: Colors.green.shade200,
+                            columns: 8,
+                            emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                          ),
+                        ),
+                      )
                   ],
                 ),
               ),
@@ -375,8 +422,9 @@ class _MessageScreenState extends State<MessageScreen> {
     //uploading image
     await ref
         .putFile(file, SettableMetadata(contentType: 'image/$ext'))
-        .then((p0) {
-      debugPrint('Data Transferred: ${p0.bytesTransferred / 1000} kb');
+        .then((taskSnapshot) {
+      debugPrint(
+          'Data Transferred: ${taskSnapshot.bytesTransferred / 1000} kb');
     });
 
     //updating image in firestore database
