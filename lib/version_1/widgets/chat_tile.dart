@@ -6,10 +6,15 @@ import '../services/helper.dart';
 import '../widgets/widgets.dart';
 
 class ChatTile extends StatelessWidget {
-  const ChatTile({super.key, required this.data, required this.messageSender});
+  const ChatTile(
+      {super.key,
+      required this.lastMsg,
+      required this.messageSender,
+      required this.isUnread});
 
-  final List<Message> data;
+  final Message lastMsg;
   final MessageSender messageSender;
+  final bool isUnread;
 
   @override
   Widget build(BuildContext context) {
@@ -30,27 +35,63 @@ class ChatTile extends StatelessWidget {
         leading: Avatar(messageSender: messageSender),
         title: Text(
           messageSender.name,
-          style: GoogleFonts.sen(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(
-          data.last.type == 0 ? data.last.content : 'Image',
           softWrap: true,
           maxLines: 1,
           style: GoogleFonts.sen(
-            color: data.last.type == 0 ? Colors.black : Colors.teal.shade800,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: Text(
-          formatTime(data.last.createdAt),
-          style: GoogleFonts.sen(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-          ),
+        subtitle: lastMsg.type == 0
+            ? Text(
+                lastMsg.content,
+                softWrap: true,
+                maxLines: 1,
+                style: GoogleFonts.sen(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              )
+            : Row(
+                children: [
+                  Icon(
+                    Icons.image,
+                    color: Colors.teal.shade600,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Image',
+                    softWrap: true,
+                    maxLines: 1,
+                    style: GoogleFonts.sen(
+                      color: Colors.teal.shade800,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+              formatTime(lastMsg.createdAt),
+              style: GoogleFonts.sen(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            Container(
+              height: 15,
+              width: 15,
+              decoration: BoxDecoration(
+                color: Colors.green.shade500,
+                borderRadius: BorderRadius.circular(25),
+              ),
+            )
+          ],
         ),
       ),
     );

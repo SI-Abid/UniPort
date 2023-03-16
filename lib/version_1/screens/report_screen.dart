@@ -14,7 +14,8 @@ class ReportViewScreen extends StatelessWidget {
         title: const AppTitle(title: 'Report'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leadingWidth: 24,
+        iconTheme: IconThemeData(color: Colors.teal.shade800),
       ),
       backgroundColor: const Color(0xfff5f5f5),
       body: Center(
@@ -22,16 +23,24 @@ class ReportViewScreen extends StatelessWidget {
           stream: FirebaseFirestore.instance.collection('reports').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.active) {
-              if (snapshot.data == null) {
-                return const Text('No reports yet');
-              }
               final reports = snapshot.data!.docs;
+              if (reports.isEmpty) {
+                return Text('No reports yet',
+                    style: TextStyle(
+                      color: Colors.teal.shade900,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ));
+              }
+              final reportIds = reports.map((e) => e.id).toList();
               reports.sort((a, b) {
                 final aTime = a['timestamp'] as int;
                 final bTime = b['timestamp'] as int;
                 return bTime.compareTo(aTime);
               });
-              return ListView.builder(
+              return ListView.separated(
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10),
                 itemCount: reports.length,
                 itemBuilder: (context, index) {
                   final report = reports[index];
@@ -40,13 +49,14 @@ class ReportViewScreen extends StatelessWidget {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                         return ReportDetailsScreen(
+                          reportId: reportIds[index],
                           title: report['title'],
                           report: report['report'],
                         );
                       }));
                     },
                     child: Container(
-                      margin: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -59,43 +69,118 @@ class ReportViewScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                report['title'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  report['title'],
+                                  softWrap: true,
+                                  style: GoogleFonts.sen(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(DateTime.fromMillisecondsSinceEpoch(
-                                      report['timestamp'] as int)
-                                  .toString()
-                                  .substring(0, 10)),
-                            ],
-                          ),
-                          const Spacer(),
-                          Container(
-                            alignment: Alignment.center,
-                            height: 25,
-                            width: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(100),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Reported on: ${DateTime.fromMillisecondsSinceEpoch(report['timestamp'] as int).toString().substring(0, 10)}',
+                                  style: GoogleFonts.sen(
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: const Icon(Icons.close, color: Colors.white),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Delete Report'),
+                                    content: const Text(
+                                        'Are you sure you want to delete this report?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Cancel',
+                                              style: TextStyle(
+                                                  color:
+                                                      Colors.teal.shade800))),
+                                      TextButton(
+                                        onPressed: () {
+                                          _resolveReport(reportIds[index]);
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Delete',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              height: 25,
+                              width: 25,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child:
+                                  const Icon(Icons.close, color: Colors.white),
+                            ),
                           ),
                           const SizedBox(width: 10),
-                          Container(
-                            alignment: Alignment.center,
-                            height: 25,
-                            width: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.teal.shade800,
-                              borderRadius: BorderRadius.circular(100),
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Accept Report'),
+                                    content: const Text(
+                                        'Are you sure you want to accept this report?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Cancel',
+                                              style: TextStyle(
+                                                  color:
+                                                      Colors.teal.shade800))),
+                                      TextButton(
+                                        onPressed: () {
+                                          _resolveReport(reportIds[index]);
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Accept',
+                                            style:
+                                                TextStyle(color: Colors.green)
+                                            // style: TextStyle(color: Colors.teal.shade800),
+                                            ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              height: 25,
+                              width: 25,
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade800,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child:
+                                  const Icon(Icons.check, color: Colors.white),
                             ),
-                            child: const Icon(Icons.check, color: Colors.white),
                           ),
                         ],
                       ),
@@ -109,6 +194,10 @@ class ReportViewScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _resolveReport(String reportId) {
+    FirebaseFirestore.instance.collection('reports').doc(reportId).delete();
   }
 }
 

@@ -27,7 +27,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
     FirebaseFirestore.instance.collection('batchInfo').get().then((value) {
       batchInfoList = value.docs.map((e) => e.data()).toList();
       // print(batchInfoList);
-      // batchInfoList.sort((a, b) => a['batch'].compareTo(b['batch']));
+      batchInfoList.sort((a, b) => a['batch'].compareTo(b['batch']));
       setState(() {
         isLoading = false;
       });
@@ -40,7 +40,8 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
         ? const LoadingScreen()
         : Scaffold(
             appBar: AppBar(
-              automaticallyImplyLeading: false,
+              leadingWidth: 24,
+              iconTheme: IconThemeData(color: Colors.teal.shade800),
               title: const AppTitle(title: 'Advisor Assign'),
               backgroundColor: Colors.transparent,
               elevation: 0,

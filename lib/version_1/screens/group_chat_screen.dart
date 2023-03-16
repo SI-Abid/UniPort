@@ -34,6 +34,30 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         iconTheme: IconThemeData(color: Colors.teal.shade800),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          // more_vert
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: TextButton(
+                  onPressed: () {
+                    // TODO: group info
+                  },
+                  child: const Text('Group Info'),
+                ),
+              ),
+              PopupMenuItem(
+                child: TextButton(
+                  onPressed: () {
+                    // TODO: delete group
+                  },
+                  child: const Text('Delete Group'),
+                ),
+              ),
+            ],
+          ),  
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

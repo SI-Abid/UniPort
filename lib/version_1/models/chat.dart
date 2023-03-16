@@ -34,16 +34,19 @@ class Chat {
   final String chatId;
   final List<MessageSender> users;
   final List<Message> messages;
+  final Map<String, dynamic> userLastRead;
   Chat({
     required this.chatId,
     required this.users,
     required this.messages,
+    required this.userLastRead,
   });
   Map<String, dynamic> toJson() {
     return {
       'chatId': chatId,
       'users': users.map((e) => e.toJson()).toList(),
       'messages': messages.map((e) => e.toJson()).toList(),
+      'userLastRead': userLastRead,
     };
   }
 
@@ -56,8 +59,10 @@ class Chat {
       messages: (json['messages'] as List)
           .map((e) => Message.fromJson(e as Map<String, dynamic>))
           .toList(),
+      userLastRead: json['userLastRead'],
     );
   }
 
   get lastMessage => messages.last;
+  int lastRead(String uid) => userLastRead[uid] ?? 0;
 }

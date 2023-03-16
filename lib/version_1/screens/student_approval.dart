@@ -20,7 +20,8 @@ class _StudentApprovalState extends State<StudentApproval> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        leadingWidth: 24,
+        iconTheme: IconThemeData(color: Colors.teal.shade800),
         backgroundColor: Colors.transparent,
         title: const AppTitle(title: 'Student Approval'),
         elevation: 0,
@@ -43,6 +44,18 @@ class _StudentApprovalState extends State<StudentApproval> {
               final List<User> users = snapshot.data!.docs
                   .map((e) => User.fromJson(e.data()))
                   .toList();
+              if (users.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No pending students',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.teal.shade900,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }
               return ListView.builder(
                 itemCount: users.length,
                 itemBuilder: (context, index) {

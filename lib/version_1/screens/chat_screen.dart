@@ -36,10 +36,8 @@ class ChatScreen extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('chats')
-                .where(
-                  'users',
-                  arrayContains: loggedInUser.toMessageSender().toJson(),
-                )
+                .where('users',
+                    arrayContains: loggedInUser.toMessageSender().toJson())
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -56,7 +54,7 @@ class ChatScreen extends StatelessWidget {
                 final bTime = b.lastMessage.createdAt;
                 return bTime.compareTo(aTime);
               });
-              // print(chatList);
+              print(chatList);
               return ListView.builder(
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
@@ -65,9 +63,12 @@ class ChatScreen extends StatelessWidget {
                   users.removeWhere(
                       (element) => element.uid == loggedInUser.uid);
                   MessageSender messageSender = users.first;
-                  List<Message> messageList = chat.messages;
+                  Message lastMessage = chat.messages.last;
+                  bool isMe = lastMessage.sender == loggedInUser.uid;
+                  bool isAfter =
+                      lastMessage.createdAt > chat.lastRead(loggedInUser.uid);
                   return ChatTile(
-                      data: messageList, messageSender: messageSender);
+                      lastMsg: lastMessage, messageSender: messageSender, isUnread: !isMe && isAfter,);
                 },
               );
             },

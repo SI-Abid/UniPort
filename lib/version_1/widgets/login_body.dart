@@ -5,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
-import '../services/callback_function.dart';
 import '../services/providers.dart';
 
 class LoginBody extends StatefulWidget {
@@ -82,7 +81,7 @@ class _LoginBodyState extends State<LoginBody> {
                   if (formKey.currentState!.validate() == false) {
                     return;
                   }
-                  //navigate to admin & student dashboard
+                  //navigate to dashboard
                   navigateOnLogin(context, email, password);
                 },
               ),
@@ -108,7 +107,7 @@ class _LoginBodyState extends State<LoginBody> {
       context,
       MaterialPageRoute(
         builder: (context) => FutureBuilder(
-          future: onLoginWithEmail(email, password),
+          future: loggedInUser.loginWithEmail(email, password),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.data == true) {
@@ -123,7 +122,7 @@ class _LoginBodyState extends State<LoginBody> {
                     backgroundColor: Colors.red,
                     textColor: Colors.white,
                     fontSize: 16.0);
-                signOut();
+                loggedInUser.signOut();
                 return const LoginScreen();
               } else {
                 Fluttertoast.showToast(
@@ -134,7 +133,7 @@ class _LoginBodyState extends State<LoginBody> {
                     backgroundColor: Colors.red,
                     textColor: Colors.white,
                     fontSize: 16.0);
-                signOut();
+                loggedInUser.signOut();
                 return const LoginScreen();
               }
             }
@@ -151,7 +150,8 @@ class _LoginBodyState extends State<LoginBody> {
                         backgroundColor: Colors.red,
                         textColor: Colors.white,
                         fontSize: 16.0);
-                    signOut();
+                    loggedInUser.signOut();
+
                     return const LoginScreen();
                   }
                 }

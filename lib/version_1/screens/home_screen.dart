@@ -19,7 +19,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // NOTE: for testing
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -29,15 +28,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final isBg = state == AppLifecycleState.paused;
     final isClosed = state == AppLifecycleState.detached;
     final isScreen = state == AppLifecycleState.resumed;
-    isBg || isScreen==true || isClosed==false ?
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(loggedInUser.uid)
-        .update({'online': isScreen, 'lastSeen': DateTime.now().millisecondsSinceEpoch})
-    : FirebaseFirestore.instance
-        .collection('users')
-        .doc(loggedInUser.uid)
-        .update({'online': isScreen, 'lastSeen': DateTime.now().millisecondsSinceEpoch});
+    isBg || isScreen == true || isClosed == false
+        ? loggedInUser.updateOnlineStatus(isScreen)
+        : loggedInUser.updateOnlineStatus(isScreen);
     debugPrint('HomeScreen: $state');
   }
 
@@ -54,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              signOut();
+              loggedInUser.signOut();
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Card(

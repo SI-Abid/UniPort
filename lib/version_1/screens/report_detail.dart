@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,49 +9,65 @@ class ReportDetailsScreen extends StatelessWidget {
     Key? key,
     required this.title,
     required this.report,
+    required this.reportId,
   }) : super(key: key);
 
   final String title;
   final String report;
+  final String reportId;
 
   @override
   Widget build(BuildContext context) {
+    print(reportId);
     return Scaffold(
       appBar: AppBar(
         title: const AppTitle(title: 'Report'),
-        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leadingWidth: 24,
+        iconTheme: IconThemeData(color: Colors.teal.shade800),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              // height: MediaQuery.of(context).size.height * 0.4,
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey,
-                ),
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+            Flexible(
+              child: Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.teal.shade800,
                   ),
-                  const SizedBox(height: 20),
-                  Text(report),
-                ],
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.sen(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal.shade900,
+                        ),
+                      ),
+                      Divider(
+                        color: Colors.teal.shade800,
+                        thickness: 0.5,
+                      ),
+                      Text(
+                        report,
+                        style: GoogleFonts.sen(
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -58,6 +75,7 @@ class ReportDetailsScreen extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
+                    _deleteReport();
                     Navigator.pop(context);
                   },
                   style: ButtonStyle(
@@ -85,6 +103,7 @@ class ReportDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
+                    _deleteReport();
                     Navigator.pop(context);
                   },
                   style: ButtonStyle(
@@ -116,5 +135,9 @@ class ReportDetailsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _deleteReport() {
+    FirebaseFirestore.instance.collection('reports').doc(reportId).delete();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/services/providers.dart';
 
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
@@ -148,7 +149,7 @@ class _SetPasswordBodyState extends State<SetPasswordBody> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FutureBuilder(
-                          future: createUser(pass),
+                          future: loggedInUser.create(pass),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               if (snapshot.data == true) {

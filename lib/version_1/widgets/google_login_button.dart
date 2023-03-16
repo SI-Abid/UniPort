@@ -5,7 +5,6 @@ import 'package:uniport/version_1/services/providers.dart';
 
 import '../screens/screens.dart';
 import '../services/callback_function.dart';
-import '../services/helper.dart';
 
 class GoogleLoginButton extends StatelessWidget {
   const GoogleLoginButton({super.key});
@@ -32,7 +31,7 @@ class GoogleLoginButton extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => FutureBuilder(
-                future: onLoginWithGoogle(),
+                future: loggedInUser.loginWithGoogle(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.data == 'invalid email') {
@@ -46,7 +45,7 @@ class GoogleLoginButton extends StatelessWidget {
                         textColor: Colors.white,
                         fontSize: 16.0,
                       );
-                      signOut();
+                      loggedInUser.signOut();
                       return const LoginScreen();
                     }
                     if (snapshot.data == 'success') {
@@ -62,7 +61,7 @@ class GoogleLoginButton extends StatelessWidget {
                         textColor: Colors.white,
                         fontSize: 16.0,
                       );
-                      signOut();
+                      loggedInUser.signOut();
                       return const LoginScreen();
                     } else if (snapshot.data == 'new user') {
                       return const PersonalInfoScreen();

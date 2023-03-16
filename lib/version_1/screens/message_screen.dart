@@ -69,10 +69,6 @@ class _MessageScreenState extends State<MessageScreen> {
                 });
                 return false;
               }
-              if (FocusScope.of(context).hasFocus) {
-                FocusScope.of(context).unfocus();
-                return false;
-              }
               return true;
             },
             child: Scaffold(
@@ -160,6 +156,10 @@ class _MessageScreenState extends State<MessageScreen> {
                             .collection('chats')
                             .doc(chatId)
                             .delete();
+                        FirebaseStorage.instance
+                            .ref()
+                            .child('images/$chatId')
+                            .delete();
                       }
                     },
                   ),
@@ -227,6 +227,7 @@ class _MessageScreenState extends State<MessageScreen> {
                                     final message = messages[index];
                                     final isMe =
                                         message.sender == loggedInUser.uid;
+                                    
                                     return MessageTile(
                                       message: message,
                                       isMe: isMe,
@@ -243,132 +244,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: mq.width * 0.01),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  // emoji button
-                                  IconButton(
-                                    iconSize: 28,
-                                    icon: Icon(
-                                      Icons.emoji_emotions,
-                                      color: Colors.teal.shade800,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        FocusScope.of(context).unfocus();
-                                        _showEmoji = !_showEmoji;
-                                      });
-                                    },
-                                  ),
-                                  Expanded(
-                                    child: TextField(
-                                      textCapitalization:
-                                          TextCapitalization.sentences,
-                                      autocorrect: true,
-                                      enableSuggestions: true,
-                                      textInputAction: TextInputAction.newline,
-                                      maxLines: 4,
-                                      minLines: 1,
-                                      // if keyboard is open, scroll to bottom
-                                      onTap: () {
-                                        setState(() {
-                                          profileViewed = false;
-                                          _showEmoji = false;
-                                        });
-                                        if (messages.isNotEmpty) {
-                                          SchedulerBinding.instance
-                                              .addPostFrameCallback((_) {
-                                            _scrollController.animateTo(
-                                              _scrollController
-                                                  .position.maxScrollExtent,
-                                              duration: const Duration(
-                                                  milliseconds: 250),
-                                              curve: Curves.easeOut,
-                                            );
-                                          });
-                                        }
-                                      },
-                                      controller: _controller,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Type something...',
-                                        border: InputBorder.none,
-                                      ),
-                                    ),
-                                  ),
-                                  // image send button
-                                  IconButton(
-                                    padding: const EdgeInsets.all(0),
-                                    onPressed: () async {
-                                      final ImagePicker picker = ImagePicker();
-
-                                      // Picking multiple images
-                                      final List<XFile> images = await picker
-                                          .pickMultiImage(imageQuality: 70);
-
-                                      // uploading & sending image one by one
-                                      for (var i in images) {
-                                        debugPrint('Image Path: ${i.path}');
-                                        setState(() => _isUploading = true);
-                                        await sendChatImage(
-                                            widget.messageSender, File(i.path));
-                                        setState(() => _isUploading = false);
-                                      }
-                                    },
-                                    icon: Icon(
-                                      Icons.image_rounded,
-                                      color: Colors.teal.shade800,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    padding: const EdgeInsets.all(0),
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.camera_alt_rounded,
-                                      color: Colors.teal.shade800,
-                                      size: 28,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 3),
-                            child: MaterialButton(
-                              minWidth: 0,
-                              padding: const EdgeInsets.only(
-                                  left: 10, right: 6, top: 10, bottom: 10),
-                              shape: const CircleBorder(),
-                              onPressed: () {
-                                String message = _controller.text.trim();
-                                if (message.isNotEmpty) {
-                                  _sendMessage(message, 0);
-                                  _controller.clear();
-                                }
-                              },
-                              color: Colors.teal.shade800,
-                              child: const Icon(
-                                Icons.send_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    chatInput(mq, context),
                     if (_showEmoji)
                       SizedBox(
                         height: mq.height * .35,
@@ -410,6 +286,143 @@ class _MessageScreenState extends State<MessageScreen> {
           );
   }
 
+  Padding chatInput(Size mq, BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: mq.width * 0.01),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // emoji button
+                  IconButton(
+                    iconSize: 28,
+                    icon: Icon(
+                      Icons.emoji_emotions,
+                      color: Colors.teal.shade800,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        FocusScope.of(context).unfocus();
+                        _showEmoji = !_showEmoji;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: TextField(
+                      textCapitalization: TextCapitalization.sentences,
+                      autocorrect: true,
+                      enableSuggestions: true,
+                      textInputAction: TextInputAction.newline,
+                      maxLines: 4,
+                      minLines: 1,
+                      // if keyboard is open, scroll to bottom
+                      onTap: () {
+                        setState(() {
+                          profileViewed = false;
+                          _showEmoji = false;
+                        });
+                        if (messages.isNotEmpty) {
+                          SchedulerBinding.instance.addPostFrameCallback((_) {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOut,
+                            );
+                          });
+                        }
+                      },
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Type something...',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  // image send button
+                  IconButton(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: () async {
+                      final ImagePicker picker = ImagePicker();
+
+                      // Picking multiple images
+                      final List<XFile> images =
+                          await picker.pickMultiImage(imageQuality: 70);
+
+                      // uploading & sending image one by one
+                      for (var i in images) {
+                        debugPrint('Image Path: ${i.path}');
+                        setState(() => _isUploading = true);
+                        await sendChatImage(widget.messageSender, File(i.path));
+                        setState(() => _isUploading = false);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.image_rounded,
+                      color: Colors.teal.shade800,
+                      size: 28,
+                    ),
+                  ),
+                  IconButton(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: () async {
+                      final ImagePicker picker = ImagePicker();
+
+                      // Pick an image
+                      final XFile? image = await picker.pickImage(
+                          source: ImageSource.camera, imageQuality: 70);
+                      if (image != null) {
+                        debugPrint('Image Path: ${image.path}');
+                        setState(() => _isUploading = true);
+
+                        await sendChatImage(
+                            widget.messageSender, File(image.path));
+                        setState(() => _isUploading = false);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.camera_alt_rounded,
+                      color: Colors.teal.shade800,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 3),
+            child: MaterialButton(
+              minWidth: 0,
+              padding: const EdgeInsets.only(
+                  left: 10, right: 6, top: 10, bottom: 10),
+              shape: const CircleBorder(),
+              onPressed: () {
+                String message = _controller.text.trim();
+                if (message.isNotEmpty) {
+                  _sendMessage(message, 0);
+                  _controller.clear();
+                }
+              },
+              color: Colors.teal.shade800,
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // send image message
   Future<void> sendChatImage(MessageSender chatUser, File file) async {
     //getting image file extension
@@ -441,10 +454,8 @@ class _MessageScreenState extends State<MessageScreen> {
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     FirebaseFirestore.instance.collection('chats').doc(chatId).set({
-      'users': [
-        loggedInUser.toMessageSender().toJson(),
-        messageSender.toMessageSender().toJson()
-      ],
+      'userLastRead': {loggedInUser.uid: message.createdAt},
+      'users': [loggedInUser.toMessageSender().toJson(), messageSender.toMessageSender().toJson()],
       'messages': FieldValue.arrayUnion([message.toJson()])
     }, SetOptions(merge: true)).then((value) {
       _scrollController.animateTo(

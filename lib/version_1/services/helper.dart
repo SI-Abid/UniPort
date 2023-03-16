@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../firebase_options.dart';
 import '../models/chat.dart';
-import '../models/message.dart';
 import '../models/user.dart';
 import 'providers.dart';
 
@@ -24,99 +23,8 @@ Future<void> initiate() async {
   google = GoogleSignIn(scopes: <String>[
     'email',
   ]);
-  // print('user ${prefs.getString('user')}');
-  // await prefs.clear();
   loggedInUser = User();
-  await loadUser();
-  FirebaseAuth.instance.authStateChanges().listen((event) {
-    debugPrint('auth state changed $event');
-    if (event != null) {
-      final docRef =
-          FirebaseFirestore.instance.collection('users').doc(event.uid);
-      docRef.get().then((value) {
-        // print('value $value');
-        if (value.exists) {
-          docRef.update({
-            'online': true,
-            'lastSeen': DateTime.now().millisecondsSinceEpoch
-          });
-        }
-        else{
-          docRef.set({
-            'online': true,
-            'lastSeen': DateTime.now().millisecondsSinceEpoch
-          }, SetOptions(merge: true));
-        }
-      });
-    }
-    if (event == null && loggedInUser.uid != '') {
-      final docRef =
-          FirebaseFirestore.instance.collection('users').doc(loggedInUser.uid);
-      docRef.get().then((value) {
-        debugPrint('value $value');
-        if (value.exists) {
-          docRef.update({
-            'online': false,
-            'lastSeen': DateTime.now().millisecondsSinceEpoch
-          });
-        }
-        else{
-          docRef.set({
-            'online': false,
-            'lastSeen': DateTime.now().millisecondsSinceEpoch
-          }, SetOptions(merge: true));
-        }
-      });
-    }
-  });
-  // FirebaseFirestore.instance.collection('users').snapshots().listen((event) {
-  //   for (var element in event.docChanges) {
-  //     if (element.type == DocumentChangeType.modified) {
-  //       // print('modified ${element.doc.data()}');
-  //       if (element.doc.id == loggedInUser.uid) {
-  //         loggedInUser = User.fromJson(element.doc.data()!);
-  //         saveUser();
-  //       }
-  //     }
-  //   }
-  // });
-}
-
-Future<bool> createUser(String password) async {
-  // save user details to firestore
-  // print('creating user ${loggedInUser.toJson()}');
-  try {
-    // final creds = await FirebaseFirestore.instance.collection('logindata').doc(loggedInUser.email).get();
-    final creds = await google.currentUser!.authentication;
-    // print(creds);
-    await FirebaseAuth.instance.signInWithCredential(
-        GoogleAuthProvider.credential(
-            accessToken: creds.accessToken, idToken: creds.idToken));
-    // print('firebase $creden');
-    await FirebaseAuth.instance.currentUser!.updatePassword(password);
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(loggedInUser.uid)
-        .update(loggedInUser.toJson());
-    await signOut();
-    return true;
-  } catch (e) {
-    debugPrint(e.toString());
-    return false;
-  }
-}
-
-void sendMessage(User sender, Message message) {
-  String chatId = getChatId(sender.uid, loggedInUser.uid);
-  FirebaseFirestore.instance.collection('chats').doc(chatId).set({
-    'users': [
-      sender.toJson(),
-      loggedInUser.toJson(),
-    ],
-    'messages': [
-      message.toJson(),
-    ],
-  }, SetOptions(merge: true));
+  await loggedInUser.load();
 }
 
 String getChatId(String uid1, String uid2) {
@@ -127,34 +35,6 @@ String getChatId(String uid1, String uid2) {
   }
 }
 
-Future<bool> saveUser() async =>
-    await prefs.setString('user', jsonEncode(loggedInUser.toJson()));
-
-Future<bool> loadUser() async {
-  String? user = prefs.getString('user');
-  debugPrint('loadUser -> $user', wrapWidth: 1024);
-  if (user == null) {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .get()
-          .then((value) {
-        if (value.exists) {
-          loggedInUser = User.fromJson(value.data()!);
-          prefs.setString('user', jsonEncode(loggedInUser.toJson()));
-        }
-      });
-    } catch (e) {
-      return false;
-    }
-  } else {
-    loggedInUser = User.fromJson(jsonDecode(prefs.getString('user')!));
-  }
-  // print('loadUser -> ${loggedInUser.toJson()}');
-  return loggedInUser.department != null;
-}
-
 Future<List<User>> userList() => FirebaseFirestore.instance
     .collection('users')
     .where('approved', isEqualTo: true)
@@ -162,7 +42,7 @@ Future<List<User>> userList() => FirebaseFirestore.instance
     .get()
     .then((value) => value.docs.map((e) => User.fromJson(e.data())).toList());
 
-Stream<List<Chat>> allChatStream() => FirebaseFirestore.instance
+Stream<List<Chat>> chatStream() => FirebaseFirestore.instance
     .collection('chats')
     .where(
       'users',
@@ -170,16 +50,6 @@ Stream<List<Chat>> allChatStream() => FirebaseFirestore.instance
     )
     .snapshots()
     .map((event) => event.docs.map((e) => Chat.fromJson(e.data())).toList());
-
-Future<void> signOut() async {
-  await FirebaseAuth.instance.signOut();
-  await Future.delayed(const Duration(seconds: 1));
-  loggedInUser = User();
-  await prefs.remove('user');
-  await google.disconnect();
-  await google.signOut();
-  return Future.value();
-}
 
 String formatTime(int miliseconds) {
   final time = DateTime.fromMillisecondsSinceEpoch(miliseconds);

@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pinch_zoom/pinch_zoom.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
@@ -166,20 +168,76 @@ class MessageTile extends StatelessWidget {
   }
 }
 
-class ImageScreen extends StatelessWidget {
+class ImageScreen extends StatefulWidget {
   final String imageUrl;
   const ImageScreen({super.key, required this.imageUrl});
+
+  @override
+  State<ImageScreen> createState() => _ImageScreenState();
+}
+
+class _ImageScreenState extends State<ImageScreen> {
+  int _turns = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0,
+        // toolbarHeight: 0,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          // rotate image
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _turns = (_turns + 1) % 4;
+              });
+            },
+            icon: Icon(Icons.rotate_right_outlined,
+                color: Colors.teal.shade800, size: 30),
+          ),
+          IconButton(
+            onPressed: () {
+              // download image
+              GallerySaver.saveImage(widget.imageUrl, albumName: 'UniPort')
+                  .then((value) {
+                debugPrint('Image path: ${widget.imageUrl}');
+                if (value == true) {
+                  Fluttertoast.showToast(
+                      msg: 'Image Saved',
+                      backgroundColor: Colors.grey.shade700,
+                      textColor: Colors.white,
+                      fontSize: 16,
+                      gravity: ToastGravity.BOTTOM,
+                      toastLength: Toast.LENGTH_SHORT);
+                } else {
+                  Fluttertoast.showToast(
+                      msg: 'Error Occured',
+                      backgroundColor: Colors.grey.shade700,
+                      textColor: Colors.white,
+                      fontSize: 16,
+                      gravity: ToastGravity.BOTTOM,
+                      toastLength: Toast.LENGTH_SHORT);
+                }
+              });
+            },
+            icon: Icon(Icons.download, color: Colors.teal.shade800, size: 30),
+          ),
+        ],
       ),
-      body: Center(
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          placeholder: (context, url) => const CircularProgressIndicator(),
-          errorWidget: (context, url, error) => const Icon(Icons.error),
+      body: PinchZoom(
+        resetDuration: const Duration(hours: 1),
+        // maxScale: 2.5,
+        child: Center(
+          child: RotatedBox(
+            quarterTurns: _turns,
+            child: CachedNetworkImage(
+              imageUrl: widget.imageUrl,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
+          ),
         ),
       ),
     );
