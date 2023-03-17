@@ -7,9 +7,8 @@ import 'package:flutter/material.dart';
 import '../services/helper.dart';
 import '../services/providers.dart';
 import 'message.dart';
-import 'message_sender.dart';
 
-class User {
+class User extends ChangeNotifier {
   // common data
   String? usertype;
   bool? approved;
@@ -131,24 +130,14 @@ class User {
     return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod lastSeen: $lastSeen, online: $online}';
   }
 
-  MessageSender toMessageSender() {
-    return MessageSender(
-      uid: uid,
-      email: email,
-      photoUrl: photoUrl,
-      firstName: firstName,
-      lastName: lastName,
-      usertype: usertype,
-    );
-  }
-
   Future<void> signOut() async {
     updateOnlineStatus(false);
-    await FirebaseAuth.instance.signOut();
     await prefs.remove('user');
+    await FirebaseAuth.instance.signOut();
     await google.disconnect();
     await google.signOut();
     copyWith(User());
+    notifyListeners();
   }
 
   Future<bool> load() async {
@@ -172,7 +161,7 @@ class User {
     } else {
       copyWith(User.fromJson(jsonDecode(prefs.getString('user')!)));
     }
-    if(department!=null){
+    if (department != null) {
       updateOnlineStatus(true);
       return true;
     }
@@ -221,6 +210,7 @@ class User {
     } catch (e) {
       return false;
     }
+    notifyListeners();
     return true;
   }
 
@@ -255,6 +245,7 @@ class User {
       });
       uid = FirebaseAuth.instance.currentUser!.uid;
       photoUrl = FirebaseAuth.instance.currentUser!.photoURL;
+      notifyListeners();
       return await load() ? 'success' : 'new user';
     } catch (e) {
       return 'error';
@@ -294,5 +285,6 @@ class User {
       'lastSeen': lastSeen,
     });
   }
-  bool get isLoggedIn => uid.isNotEmpty;
+
+  bool get isLoggedIn => uid != "";
 }

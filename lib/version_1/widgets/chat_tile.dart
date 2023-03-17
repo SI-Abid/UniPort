@@ -13,7 +13,7 @@ class ChatTile extends StatelessWidget {
       required this.isUnread});
 
   final Message lastMsg;
-  final MessageSender messageSender;
+  final User messageSender;
   final bool isUnread;
 
   @override

@@ -32,7 +32,7 @@ import 'models.dart';
 
 class Chat {
   final String chatId;
-  final List<MessageSender> users;
+  final List<User> users;
   final List<Message> messages;
   final Map<String, dynamic> userLastRead;
   Chat({
@@ -54,7 +54,7 @@ class Chat {
     return Chat(
       chatId: json['chatId'],
       users: (json['users'] as List)
-          .map((e) => MessageSender.fromJson(e as Map<String, dynamic>))
+          .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList(),
       messages: (json['messages'] as List)
           .map((e) => Message.fromJson(e as Map<String, dynamic>))

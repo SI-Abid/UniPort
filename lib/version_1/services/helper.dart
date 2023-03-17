@@ -131,17 +131,7 @@ String? teacherIdValidator(String? id) {
 }
 
 String? departmentValidator(String? department) {
-  // Regular expression pattern for matching three alphabets or 4 alphabets
-  const pattern = r'^[A-Z]{2,3}$';
-  final regex = RegExp(pattern);
-  if (department!.isEmpty) {
-    return 'Department name cannot be empty';
-  }
-  if (!regex.hasMatch(department)) {
-    // If the department is not valid, print an error message
-    return 'Please enter a valid department.';
-  }
-  return null;
+  return department == null ? 'Please select your department' : null;
 }
 
 String? initialsValidator(String? initial) {
@@ -156,14 +146,7 @@ String? initialsValidator(String? initial) {
 }
 
 String? designationValidator(String? designation) {
-  // Regular expression pattern for matching 3 alphabets
-  const pattern = r'^[a-zA-Z\s]+$';
-  final regex = RegExp(pattern);
-  if (!regex.hasMatch(designation!)) {
-    // If the designation is not valid, print an error message
-    return 'Please enter a valid designation.';
-  }
-  return null;
+  return designation == null ? 'Please select your designation' : null;
 }
 
 String? passwordValidator(String? password) {

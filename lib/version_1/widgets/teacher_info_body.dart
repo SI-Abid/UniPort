@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../services/helper.dart';
 import '../services/providers.dart';
@@ -16,8 +17,6 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
   final tIdController = TextEditingController();
 
   final intialController = TextEditingController();
-
-  final designationController = TextEditingController();
 
   final deptController = TextEditingController();
 
@@ -65,21 +64,11 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
               ),
               const SizedBox(height: 5),
               // Should be Designation
-              CustomTextField(
-                controller: designationController,
-                hintText: 'Designation',
-                formValidator: designationValidator,
-                textCapitalization: TextCapitalization.words,
-              ),
+              _getDesignationSelector(context),
               const SizedBox(height: 5),
               // Should be Department
-              CustomTextField(
-                controller: deptController,
-                hintText: 'Department',
-                formValidator: departmentValidator,
-                textCapitalization: TextCapitalization.characters,
-              ),
-              // const SizedBox(height: 5),
+              _getDepartmentSelector(context),
+              const SizedBox(height: 5),
               // Should be Department
               checkbox,
               const SizedBox(height: 5),
@@ -93,12 +82,10 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   formKey.currentState!.save();
                   String tid = tIdController.text.trim();
                   String initial = intialController.text.trim().toUpperCase();
-                  String designation = designationController.text.trim();
                   String dept = deptController.text.trim();
                   loggedInUser.usertype = 'teacher';
                   loggedInUser.teacherId = tid;
                   loggedInUser.initials = initial;
-                  loggedInUser.designation = designation;
                   loggedInUser.department = dept;
                   loggedInUser.isHod = checkbox.isChecked;
                   debugPrint('Teacher page: $loggedInUser', wrapWidth: 1024);
@@ -113,6 +100,183 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  SizedBox _getDesignationSelector(BuildContext context) {
+    final List<String> designationList = [
+      'Assistant Professor',
+      'Associate Professor',
+      'Lecturer',
+      'Professor',
+    ];
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: 65,
+      child: DropdownButtonFormField(
+        validator: designationValidator,
+        style: GoogleFonts.sen(
+          letterSpacing: 0.5,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: const Color.fromARGB(255, 24, 143, 121),
+        ),
+        decoration: InputDecoration(
+          constraints: const BoxConstraints(minHeight: 65),
+          errorBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 255, 69, 69),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          errorStyle: GoogleFonts.sen(
+            letterSpacing: 0.5,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: const Color.fromARGB(255, 255, 69, 69),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 255, 69, 69),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
+          hintText: 'Designation',
+          hintStyle: GoogleFonts.sen(
+            letterSpacing: 0.5,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xffababab),
+          ),
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+        items: designationList
+            .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(e),
+                ))
+            .toList(),
+        onChanged: (value) => setState(() {
+          loggedInUser.designation = value.toString();
+          formKey.currentState!.validate();
+        }),
+      ),
+    );
+  }
+
+  SizedBox _getDepartmentSelector(BuildContext context) {
+    final List<String> departmentList = [
+      'BuA',
+      'CSE',
+      'ENG',
+      'ARC',
+      'LAW',
+      'CE',
+      'EEE',
+      'IST',
+      'PH',
+      'THM',
+      'BANG',
+    ];
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: 65,
+      child: DropdownButtonFormField(
+        menuMaxHeight: 300,
+        validator: departmentValidator,
+        style: GoogleFonts.sen(
+          letterSpacing: 0.5,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: const Color.fromARGB(255, 24, 143, 121),
+        ),
+        decoration: InputDecoration(
+          constraints: const BoxConstraints(minHeight: 65),
+          errorBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 255, 69, 69),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          errorStyle: GoogleFonts.sen(
+            letterSpacing: 0.5,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: const Color.fromARGB(255, 255, 69, 69),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 255, 69, 69),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
+          hintText: 'Department',
+          hintStyle: GoogleFonts.sen(
+            letterSpacing: 0.5,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xffababab),
+          ),
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 24, 143, 121),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+        items: departmentList
+            .map((e) => DropdownMenuItem(
+                  alignment: Alignment.centerLeft,
+                  value: e,
+                  child: Text(e),
+                ))
+            .toList(),
+        onChanged: (value) => setState(() {
+          loggedInUser.designation = value.toString();
+          formKey.currentState!.validate();
+        }),
       ),
     );
   }

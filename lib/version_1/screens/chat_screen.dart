@@ -22,7 +22,7 @@ class ChatScreen extends StatelessWidget {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child:
-                Avatar(messageSender: loggedInUser.toMessageSender(), size: 22),
+                Avatar(messageSender: loggedInUser, size: 22),
           ),
         ],
         backgroundColor: Colors.transparent,
@@ -37,42 +37,39 @@ class ChatScreen extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('chats')
                 .where('users',
-                    arrayContains: loggedInUser.toMessageSender().toJson())
+                    arrayContains: loggedInUser.toJson())
+                .orderBy('lastMessage.createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingScreen();
               }
-              List<Chat> chatList = [];
-              for (var element in snapshot.data!.docs) {
-                final data = element.data();
-                data['chatId'] = element.id;
-                chatList.add(Chat.fromJson(data));
-              }
-              chatList.sort((a, b) {
-                final aTime = a.lastMessage.createdAt;
-                final bTime = b.lastMessage.createdAt;
-                return bTime.compareTo(aTime);
-              });
-              print(chatList);
+              final List<Map<String, dynamic>> docs = snapshot.data!.docs
+                  .map<Map<String, dynamic>>((e) => e.data())
+                  .toList();
               return ListView.separated(
                 physics: const BouncingScrollPhysics(),
                 separatorBuilder: (context, index) => const SizedBox(
                   height: 6,
                 ),
-                itemCount: chatList.length,
+                itemCount: docs.length,
                 itemBuilder: (context, index) {
-                  Chat chat = chatList[index];
-                  List<MessageSender> users = chat.users;
+                  List<User> users = docs[index]['users']
+                      .map<User>((e) =>
+                          User.fromJson(e as Map<String, dynamic>))
+                      .toList();
                   users.removeWhere(
                       (element) => element.uid == loggedInUser.uid);
-                  MessageSender messageSender = users.first;
-                  Message lastMessage = chat.messages.last;
+                  User messageSender = users.first;
+                  Message lastMessage = Message.fromJson(
+                      docs[index]['lastMessage'] as Map<String, dynamic>);
                   bool isMe = lastMessage.sender == loggedInUser.uid;
-                  bool isAfter =
-                      lastMessage.createdAt > chat.lastRead(loggedInUser.uid);
+                  bool isAfter = lastMessage.createdAt > loggedInUser.lastSeen!;
                   return ChatTile(
-                      lastMsg: lastMessage, messageSender: messageSender, isUnread: !isMe && isAfter,);
+                    lastMsg: lastMessage,
+                    messageSender: messageSender,
+                    isUnread: !isMe && isAfter,
+                  );
                 },
               );
             },

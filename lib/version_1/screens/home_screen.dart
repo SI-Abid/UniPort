@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final double ratio = MediaQuery.of(context).size.aspectRatio;
-    debugPrint('HomeScreen: ${MediaQuery.of(context).size.aspectRatio}');
+    debugPrint('HomeScreen: $ratio');
     return Scaffold(
       appBar: AppBar(
         title: const AppTitle(title: 'UNIPORT'),

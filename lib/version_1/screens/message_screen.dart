@@ -16,7 +16,7 @@ import '../screens/screens.dart';
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key, required this.messageSender});
-  final MessageSender messageSender;
+  final User messageSender;
 
   @override
   State<MessageScreen> createState() => _MessageScreenState();
@@ -25,27 +25,37 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
   late String chatId;
-  late List<Message> messages;
+  late List<QueryDocumentSnapshot> messages;
   late User messageSender;
   int count = 0;
   bool profileViewed = false;
-  bool isLoading = true;
 
   bool _isUploading = false;
   bool _showEmoji = false;
+  int _limit = 20;
+  final int _limitIncrement = 20;
 
   @override
   void initState() {
     super.initState();
-    widget.messageSender.toUser().then((value) {
-      setState(() {
-        messageSender = value;
-        isLoading = false;
-        chatId = getChatId(loggedInUser.uid, messageSender.uid);
-      });
-    });
+    messageSender = widget.messageSender;
+    chatId = getChatId(loggedInUser.uid, messageSender.uid);
     messages = [];
+    _scrollController.addListener(_scrollListener);
+  }
+
+  _scrollListener() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
+        !_scrollController.position.outOfRange &&
+        _limit <= messages.length) {
+      setState(() {
+        _limit += _limitIncrement;
+      });
+    }
   }
 
   @override
@@ -59,231 +69,222 @@ class _MessageScreenState extends State<MessageScreen> {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context).size;
     // print(loggedInUser);
-    return isLoading
-        ? const LoadingScreen()
-        : WillPopScope(
-            onWillPop: () async {
-              if (profileViewed) {
-                setState(() {
-                  profileViewed = false;
-                });
-                return false;
-              }
-              return true;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                leadingWidth: 24,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Avatar(messageSender: messageSender),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          messageSender.name,
+    return WillPopScope(
+      onWillPop: () async {
+        if (profileViewed) {
+          setState(() {
+            profileViewed = false;
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leadingWidth: 24,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Avatar(messageSender: messageSender),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    messageSender.name,
+                    style: GoogleFonts.sen(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(messageSender.uid)
+                        .snapshots(),
+                    builder: (context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData) {
+                        final data = snapshot.data;
+                        return Text(
+                          data['online']
+                              ? 'Online'
+                              : 'Last seen: ${formatTime(data['lastSeen'])}',
                           style: GoogleFonts.sen(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
                             color: Colors.black,
                           ),
-                        ),
-                        StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(messageSender.uid)
-                              .snapshots(),
-                          builder: (context, AsyncSnapshot snapshot) {
-                            if (snapshot.hasData) {
-                              final data = snapshot.data;
-                              return Text(
-                                data['online']
-                                    ? 'Online'
-                                    : 'Last seen: ${formatTime(data['lastSeen'])}',
-                                style: GoogleFonts.sen(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                ),
-                              );
-                            } else {
-                              return const Text('Loading...');
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                // centerTitle: true,
-                // actionsIconTheme: IconThemeData(color: Colors.teal.shade800),
-                iconTheme: IconThemeData(color: Colors.teal[800]),
-                actions: [
-                  PopupMenuButton(
-                    onOpened: () {
-                      FocusScope.of(context).unfocus();
-                    },
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: Colors.teal.shade800,
-                    ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)
-                            .copyWith(topRight: const Radius.circular(0))),
-                    padding: const EdgeInsets.all(10),
-                    elevation: 10,
-                    color: Colors.grey.shade200,
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 1,
-                        child: Text('View Profile'),
-                      ),
-                      const PopupMenuItem(
-                        value: 2,
-                        child: Text('Delete Chat'),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      if (value == 1) {
-                        setState(() {
-                          profileViewed = true;
-                        });
-                      } else if (value == 2) {
-                        FirebaseFirestore.instance
-                            .collection('chats')
-                            .doc(chatId)
-                            .delete();
-                        FirebaseStorage.instance
-                            .ref()
-                            .child('images/$chatId')
-                            .delete();
+                        );
+                      } else {
+                        return const Text('Loading...');
                       }
                     },
                   ),
                 ],
-                backgroundColor: Colors.transparent,
-                elevation: 0,
               ),
-              backgroundColor: const Color(0xfff5f5f5),
-              body: Container(
-                color: Colors.green.shade100,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          FocusScope.of(context).unfocus();
+            ],
+          ),
+          // centerTitle: true,
+          // actionsIconTheme: IconThemeData(color: Colors.teal.shade800),
+          iconTheme: IconThemeData(color: Colors.teal[800]),
+          actions: [
+            PopupMenuButton(
+              onOpened: () {
+                FocusScope.of(context).unfocus();
+              },
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.teal.shade800,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)
+                      .copyWith(topRight: const Radius.circular(0))),
+              padding: const EdgeInsets.all(10),
+              elevation: 10,
+              color: Colors.grey.shade200,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 1,
+                  child: Text('View Profile'),
+                ),
+                const PopupMenuItem(
+                  value: 2,
+                  child: Text('Delete Chat'),
+                ),
+              ],
+              onSelected: (value) {
+                if (value == 1) {
+                  setState(() {
+                    profileViewed = true;
+                  });
+                } else if (value == 2) {
+                  FirebaseFirestore.instance
+                      .collection('chats')
+                      .doc(chatId)
+                      .delete();
+                  FirebaseStorage.instance
+                      .ref()
+                      .child('images/$chatId')
+                      .delete();
+                }
+              },
+            ),
+          ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        backgroundColor: const Color(0xfff5f5f5),
+        body: Container(
+          color: Colors.green.shade100,
+          child: Column(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    setState(() {
+                      _showEmoji = false;
+                      profileViewed = false;
+                    });
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    alignment: Alignment.center,
+                    children: [
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('chats')
+                            .doc(chatId)
+                            .collection('messages')
+                            .orderBy('createdAt', descending: true)
+                            .limit(_limit)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData == false) {
+                            return const LoadingScreen();
+                          }
+                          messages = snapshot.data!.docs;
+                          // if data is epmty
+                          if (messages.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No messages yet',
+                                style: GoogleFonts.sen(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            );
+                          }
+                          final messageList = messages
+                              .map((e) => Message.fromJson(
+                                  e.data() as Map<String, dynamic>))
+                              .toList();
+                          return ListView.builder(
+                            reverse: true,
+                            controller: _scrollController,
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              final message = messageList[index];
+                              final isMe = message.sender == loggedInUser.uid;
+
+                              return MessageTile(
+                                message: message,
+                                isMe: isMe,
+                              );
+                            },
+                          );
                         },
-                        child: Stack(
-                          fit: StackFit.expand,
-                          alignment: Alignment.center,
-                          children: [
-                            StreamBuilder(
-                              stream: FirebaseFirestore.instance
-                                  .collection('chats')
-                                  .doc(chatId)
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData == false) {
-                                  return const LoadingScreen();
-                                }
-                                final Map<String, dynamic> data =
-                                    snapshot.data!.data() ?? {};
-                                // if data is epmty
-                                if (data.isEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      'No messages yet',
-                                      style: GoogleFonts.sen(
-                                        fontSize: 20,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                messages = (data['messages'] as List<dynamic>)
-                                    .map((e) => Message.fromJson(e))
-                                    .toList();
-                                if (messages.length > count) {
-                                  SchedulerBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    _scrollController.animateTo(
-                                      _scrollController
-                                          .position.maxScrollExtent,
-                                      duration:
-                                          const Duration(milliseconds: 100),
-                                      curve: Curves.easeOut,
-                                    );
-                                  });
-                                  count = messages.length;
-                                }
-                                return ListView.builder(
-                                  controller: _scrollController,
-                                  itemCount: messages.length,
-                                  itemBuilder: (context, index) {
-                                    final message = messages[index];
-                                    final isMe =
-                                        message.sender == loggedInUser.uid;
-                                    
-                                    return MessageTile(
-                                      message: message,
-                                      isMe: isMe,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                            if (profileViewed)
-                              ProfileCard(messageSender: messageSender),
-                            if (_isUploading)
-                              const Center(child: CircularProgressIndicator())
-                          ],
-                        ),
                       ),
-                    ),
-                    chatInput(mq, context),
-                    if (_showEmoji)
-                      SizedBox(
-                        height: mq.height * .35,
-                        child: EmojiPicker(
-                          onBackspacePressed: () => setState(() {
-                            if (_controller.text.isNotEmpty) {
-                              _controller.text = _controller.text.characters
-                                  .toList()
-                                  .map((e) => e.toString())
-                                  .toList()
-                                  .sublist(
-                                      0, _controller.text.characters.length)
-                                  .join();
-                            }
-                          }),
-                          textEditingController: _controller,
-                          config: Config(
-                            emojiTextStyle: GoogleFonts.sen(
-                              fontSize: 20,
-                              color: Colors.black,
-                            ),
-                            checkPlatformCompatibility: true,
-                            backspaceColor: Colors.blueGrey.shade900,
-                            enableSkinTones: true,
-                            indicatorColor: Colors.teal.shade400,
-                            iconColorSelected: Colors.teal.shade400,
-                            buttonMode: ButtonMode.MATERIAL,
-                            iconColor: Colors.teal.shade800,
-                            bgColor: Colors.green.shade200,
-                            columns: 8,
-                            emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                          ),
-                        ),
-                      )
-                  ],
+                      if (profileViewed)
+                        ProfileCard(messageSender: messageSender),
+                      if (_isUploading)
+                        const Center(child: CircularProgressIndicator())
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
+              chatInput(mq, context),
+              if (_showEmoji)
+                SizedBox(
+                  height: mq.height * .35,
+                  child: EmojiPicker(
+                    onBackspacePressed: () => setState(() {
+                      if (_controller.text.isNotEmpty) {
+                        _controller.text = _controller.text.characters
+                            .toList()
+                            .map((e) => e.toString())
+                            .toList()
+                            .sublist(0, _controller.text.characters.length)
+                            .join();
+                      }
+                    }),
+                    textEditingController: _controller,
+                    config: Config(
+                      emojiTextStyle: GoogleFonts.sen(
+                        fontSize: 20,
+                        color: Colors.black,
+                      ),
+                      checkPlatformCompatibility: true,
+                      backspaceColor: Colors.blueGrey.shade900,
+                      enableSkinTones: true,
+                      indicatorColor: Colors.teal.shade400,
+                      iconColorSelected: Colors.teal.shade400,
+                      buttonMode: ButtonMode.MATERIAL,
+                      iconColor: Colors.teal.shade800,
+                      bgColor: Colors.green.shade200,
+                      columns: 8,
+                      emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                    ),
+                  ),
+                )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Padding chatInput(Size mq, BuildContext context) {
@@ -328,14 +329,10 @@ class _MessageScreenState extends State<MessageScreen> {
                           profileViewed = false;
                           _showEmoji = false;
                         });
-                        if (messages.isNotEmpty) {
-                          SchedulerBinding.instance.addPostFrameCallback((_) {
-                            _scrollController.animateTo(
-                              _scrollController.position.maxScrollExtent,
-                              duration: const Duration(milliseconds: 250),
-                              curve: Curves.easeOut,
-                            );
-                          });
+                        if (_scrollController.hasClients) {
+                          _scrollController.animateTo(0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut);
                         }
                       },
                       controller: _controller,
@@ -408,6 +405,11 @@ class _MessageScreenState extends State<MessageScreen> {
                 if (message.isNotEmpty) {
                   _sendMessage(message, 0);
                   _controller.clear();
+                  if (_scrollController.hasClients) {
+                    _scrollController.animateTo(0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut);
+                  }
                 }
               },
               color: Colors.teal.shade800,
@@ -424,7 +426,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   // send image message
-  Future<void> sendChatImage(MessageSender chatUser, File file) async {
+  Future<void> sendChatImage(User chatUser, File file) async {
     //getting image file extension
     final ext = file.path.split('.').last;
 
@@ -445,24 +447,29 @@ class _MessageScreenState extends State<MessageScreen> {
     _sendMessage(imageUrl, 1);
   }
 
-  // send text message
+  // send message
   void _sendMessage(String content, int type) {
+    final int messageCreationTime = DateTime.now().millisecondsSinceEpoch;
+    final chatId = getChatId(loggedInUser.uid, widget.messageSender.uid);
+    final DocumentReference docRef = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageCreationTime.toString());
+
     final message = Message(
       type: type,
       sender: loggedInUser.uid,
       content: content,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
+      createdAt: messageCreationTime,
     );
+
     FirebaseFirestore.instance.collection('chats').doc(chatId).set({
-      'userLastRead': {loggedInUser.uid: message.createdAt},
-      'users': [loggedInUser.toMessageSender().toJson(), messageSender.toMessageSender().toJson()],
-      'messages': FieldValue.arrayUnion([message.toJson()])
-    }, SetOptions(merge: true)).then((value) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
-      );
+      'lastMessage': message.toJson(),
+      'users': [loggedInUser.toJson(), widget.messageSender.toJson()],
+    }, SetOptions(merge: true));
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      transaction.set(docRef, message.toJson());
     });
   }
 }
