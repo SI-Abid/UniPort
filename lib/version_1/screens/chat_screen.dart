@@ -21,8 +21,7 @@ class ChatScreen extends StatelessWidget {
         actions: [
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child:
-                Avatar(messageSender: loggedInUser, size: 22),
+            child: Avatar(messageSender: loggedInUser, size: 22),
           ),
         ],
         backgroundColor: Colors.transparent,
@@ -36,8 +35,7 @@ class ChatScreen extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('chats')
-                .where('users',
-                    arrayContains: loggedInUser.toJson())
+                .where('users', arrayContains: loggedInUser.toJson())
                 .orderBy('lastMessage.createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -55,8 +53,8 @@ class ChatScreen extends StatelessWidget {
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   List<User> users = docs[index]['users']
-                      .map<User>((e) =>
-                          User.fromJson(e as Map<String, dynamic>))
+                      .map<User>(
+                          (e) => User.fromJson(e as Map<String, dynamic>))
                       .toList();
                   users.removeWhere(
                       (element) => element.uid == loggedInUser.uid);
@@ -64,7 +62,8 @@ class ChatScreen extends StatelessWidget {
                   Message lastMessage = Message.fromJson(
                       docs[index]['lastMessage'] as Map<String, dynamic>);
                   bool isMe = lastMessage.sender == loggedInUser.uid;
-                  bool isAfter = lastMessage.createdAt > loggedInUser.lastSeen!;
+                  bool isAfter = lastMessage.createdAt >
+                      (docs[index][loggedInUser.uid] ?? 0);
                   return ChatTile(
                     lastMsg: lastMessage,
                     messageSender: messageSender,

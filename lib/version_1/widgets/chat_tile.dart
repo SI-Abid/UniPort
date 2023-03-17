@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/services/providers.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
@@ -18,6 +19,7 @@ class ChatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMe = lastMsg.sender == loggedInUser.uid;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -38,18 +40,18 @@ class ChatTile extends StatelessWidget {
           softWrap: true,
           maxLines: 1,
           style: GoogleFonts.sen(
-            fontSize: 17,
+            fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: lastMsg.type == 0
             ? Text(
-                lastMsg.content,
+                '${isMe ? 'You: ' : ''}${lastMsg.content}',
                 softWrap: true,
                 maxLines: 1,
                 style: GoogleFonts.sen(
                   color: Colors.black,
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w400,
                 ),
               )
@@ -75,19 +77,21 @@ class ChatTile extends StatelessWidget {
               ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               formatTime(lastMsg.createdAt),
               style: GoogleFonts.sen(
                 fontSize: 12,
-                fontWeight: FontWeight.w400,
+                fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                color: isUnread ? Colors.teal.shade600 : Colors.black,
               ),
             ),
             Container(
-              height: 15,
-              width: 15,
+              height: 16,
+              width: 16,
               decoration: BoxDecoration(
-                color: Colors.green.shade500,
+                color: isUnread ? Colors.teal.shade600 : Colors.transparent,
                 borderRadius: BorderRadius.circular(25),
               ),
             )

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -37,26 +38,44 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         actions: [
           // more_vert
           PopupMenuButton(
-            icon: const Icon(Icons.more_vert),
+            onOpened: () {
+              FocusScope.of(context).unfocus();
+            },
+            icon: Icon(
+              Icons.more_vert,
+              color: Colors.teal.shade800,
+            ),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)
+                    .copyWith(topRight: const Radius.circular(0))),
+            padding: const EdgeInsets.all(10),
+            elevation: 10,
+            color: Colors.grey.shade200,
             itemBuilder: (context) => [
-              PopupMenuItem(
-                child: TextButton(
-                  onPressed: () {
-                    // TODO: group info
-                  },
-                  child: const Text('Group Info'),
-                ),
+              const PopupMenuItem(
+                value: 1,
+                child: Text('View Profile'),
               ),
-              PopupMenuItem(
-                child: TextButton(
-                  onPressed: () {
-                    // TODO: delete group
-                  },
-                  child: const Text('Delete Group'),
+              if (loggedInUser.usertype == 'teacher')
+                const PopupMenuItem(
+                  value: 2,
+                  child: Text('Delete Chat'),
                 ),
-              ),
             ],
-          ),  
+            onSelected: (value) {
+              if (value == 1) {
+              } else if (value == 2) {
+                FirebaseFirestore.instance
+                    .collection('advisor groups')
+                    .doc(widget.groupId)
+                    .delete();
+                FirebaseStorage.instance
+                    .ref()
+                    .child('images/${widget.groupId}')
+                    .delete();
+              }
+            },
+          ),
         ],
       ),
       body: Container(

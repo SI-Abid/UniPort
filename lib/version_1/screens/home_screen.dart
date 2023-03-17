@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../models/models.dart';
-import '../services/helper.dart';
 import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
@@ -26,11 +25,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     final isBg = state == AppLifecycleState.paused;
-    final isClosed = state == AppLifecycleState.detached;
     final isScreen = state == AppLifecycleState.resumed;
-    isBg || isScreen == true || isClosed == false
-        ? loggedInUser.updateOnlineStatus(isScreen)
-        : loggedInUser.updateOnlineStatus(isScreen);
+    if (isScreen) {
+      loggedInUser.updateOnlineStatus(true);
+    } else if (isBg) {
+      loggedInUser.updateOnlineStatus(false);
+    }
     debugPrint('HomeScreen: $state');
   }
 
@@ -47,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              loggedInUser.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              loggedInUser.signOut().then(
+                  (value) => Navigator.pushReplacementNamed(context, '/login'));
             },
             child: Card(
               elevation: 2,

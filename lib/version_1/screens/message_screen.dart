@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -12,7 +11,6 @@ import '../models/models.dart';
 import '../services/helper.dart';
 import '../services/providers.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key, required this.messageSender});
@@ -62,6 +60,9 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    FirebaseFirestore.instance.collection('chats').doc(chatId).set(
+        {loggedInUser.uid: DateTime.now().millisecondsSinceEpoch},
+        SetOptions(merge: true));
     super.dispose();
   }
 
@@ -101,7 +102,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
-                        .collection('users')
+                        .collection('onlineStatus')
                         .doc(messageSender.uid)
                         .snapshots(),
                     builder: (context, AsyncSnapshot snapshot) {
@@ -203,7 +204,7 @@ class _MessageScreenState extends State<MessageScreen> {
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData == false) {
-                            return const LoadingScreen();
+                            return const SizedBox.shrink();
                           }
                           messages = snapshot.data!.docs;
                           // if data is epmty

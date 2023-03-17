@@ -19,8 +19,6 @@ class User extends ChangeNotifier {
   String? contact;
   String? department;
   String? photoUrl;
-  int? lastSeen;
-  bool? online;
   // if teacher
   String? teacherId;
   String? initials;
@@ -47,8 +45,6 @@ class User extends ChangeNotifier {
     this.batch,
     this.photoUrl,
     this.isHod = false, // head of department (hod)
-    this.lastSeen,
-    this.online = false,
   });
 
   void copyWith(User user) {
@@ -68,8 +64,6 @@ class User extends ChangeNotifier {
     batch = user.batch;
     photoUrl = user.photoUrl;
     isHod = user.isHod;
-    lastSeen = user.lastSeen;
-    online = user.online;
   }
 
   Map<String, dynamic> toJson() {
@@ -83,8 +77,6 @@ class User extends ChangeNotifier {
       'contact': contact,
       'department': department,
       'photoUrl': photoUrl,
-      'lastSeen': lastSeen,
-      'online': online,
     };
     if (usertype == 'student') {
       object['studentId'] = studentId;
@@ -118,8 +110,6 @@ class User extends ChangeNotifier {
       batch: json['batch'],
       photoUrl: json['photoUrl'],
       isHod: json['isHod'],
-      lastSeen: json['lastSeen'],
-      online: json['online'],
     );
   }
 
@@ -127,15 +117,26 @@ class User extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod lastSeen: $lastSeen, online: $online}';
+    return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod}';
   }
 
   Future<void> signOut() async {
-    updateOnlineStatus(false);
+    int lastSeen = DateTime.now().millisecondsSinceEpoch;
+    final docRef =
+        FirebaseFirestore.instance.collection('onlineStatus').doc(uid);
+    docRef.get().then((value) {
+      if (value.data()?['online'] != false) {
+        FirebaseFirestore.instance.runTransaction((transaction) async {
+          transaction.set(docRef, {
+            'online': false,
+            'lastSeen': lastSeen,
+          });
+        }).then((value) => FirebaseAuth.instance.signOut());
+      }
+    });
     await prefs.remove('user');
-    await FirebaseAuth.instance.signOut();
     await google.disconnect();
-    await google.signOut();
+    // await google.signOut();
     copyWith(User());
     notifyListeners();
   }
@@ -278,11 +279,21 @@ class User extends ChangeNotifier {
   }
 
   void updateOnlineStatus(bool online) {
-    this.online = online;
-    lastSeen = DateTime.now().millisecondsSinceEpoch;
-    FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'online': online,
-      'lastSeen': lastSeen,
+    if (uid.isEmpty) {
+      return;
+    }
+    int lastSeen = DateTime.now().millisecondsSinceEpoch;
+    final docRef =
+        FirebaseFirestore.instance.collection('onlineStatus').doc(uid);
+    docRef.get().then((value) {
+      if (value.data()?['online'] != online) {
+        FirebaseFirestore.instance.runTransaction((transaction) async {
+          transaction.set(docRef, {
+            'online': online,
+            'lastSeen': lastSeen,
+          });
+        });
+      }
     });
   }
 
