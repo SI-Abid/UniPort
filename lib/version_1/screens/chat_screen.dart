@@ -20,7 +20,7 @@ class ChatScreen extends StatelessWidget {
         iconTheme: IconThemeData(color: Colors.teal.shade800),
         actions: [
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child:
                 Avatar(messageSender: loggedInUser.toMessageSender(), size: 22),
           ),
@@ -55,7 +55,11 @@ class ChatScreen extends StatelessWidget {
                 return bTime.compareTo(aTime);
               });
               print(chatList);
-              return ListView.builder(
+              return ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                separatorBuilder: (context, index) => const SizedBox(
+                  height: 6,
+                ),
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   Chat chat = chatList[index];

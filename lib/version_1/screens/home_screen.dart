@@ -73,11 +73,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         child: SizedBox(
           // color: Colors.amber,
           width: ratio < 1 ? 450 : 650,
-          // padding: const EdgeInsets.symmetric(horizontal: 20),
           child: GridView.count(
             primary: false,
             padding: const EdgeInsets.all(20),
-            crossAxisSpacing: 20,
+            crossAxisSpacing: 10,
             mainAxisSpacing: 20,
             crossAxisCount: ratio < 1 ? 2 : 3,
             childAspectRatio: ratio < 1 ? 0.75 : 0.95,

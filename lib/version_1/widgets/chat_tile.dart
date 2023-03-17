@@ -27,7 +27,7 @@ class ChatTile extends StatelessWidget {
           width: 1,
         ),
       ),
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: ListTile(
         onTap: () {
           Navigator.pushNamed(context, '/message', arguments: messageSender);

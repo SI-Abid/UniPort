@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,6 +20,7 @@ Future<void> initiate() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
+  await DefaultCacheManager().emptyCache();
   prefs = await SharedPreferences.getInstance();
   google = GoogleSignIn(scopes: <String>[
     'email',

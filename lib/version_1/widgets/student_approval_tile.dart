@@ -11,7 +11,7 @@ class PendingStudentTile extends StatefulWidget {
     required this.selected,
     required this.trigger,
   });
-  final List selected;
+  final List<String> selected;
   final User user;
   final Function trigger;
   @override
@@ -20,6 +20,24 @@ class PendingStudentTile extends StatefulWidget {
 
 class _PendingStudentTileState extends State<PendingStudentTile> {
   bool marked = false;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.selected.contains(widget.user.uid)) {
+      marked = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PendingStudentTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected.contains(widget.user.uid)) {
+      marked = true;
+    } else {
+      marked = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
