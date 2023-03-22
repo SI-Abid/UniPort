@@ -54,110 +54,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                   children: [
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Select Teacher',
-                            style: TextStyle(
-                              letterSpacing: 0.5,
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              color: Color.fromARGB(255, 24, 143, 121),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          DropdownButtonFormField(
-                            hint: Text(
-                              'No Teacher Assigned',
-                              style: GoogleFonts.sen(
-                                letterSpacing: 0.5,
-                                fontSize: 18,
-                                fontWeight: FontWeight.normal,
-                                color: const Color.fromARGB(255, 24, 143, 121),
-                              ),
-                            ),
-                            items: widget.teacherList.map((teacher) {
-                              return DropdownMenuItem(
-                                value: teacher,
-                                child: Text(
-                                  '${teacher.initials}, ${teacher.name}',
-                                  style: GoogleFonts.sen(
-                                    letterSpacing: 0.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.normal,
-                                    color:
-                                        const Color.fromARGB(255, 24, 143, 121),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            style: GoogleFonts.sen(
-                              letterSpacing: 0.5,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: const Color.fromARGB(255, 24, 143, 121),
-                            ),
-                            decoration: InputDecoration(
-                              constraints: const BoxConstraints(minHeight: 65),
-                              errorBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 255, 69, 69),
-                                  width: 1.5,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              errorStyle: GoogleFonts.sen(
-                                letterSpacing: 0.5,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: const Color.fromARGB(255, 255, 69, 69),
-                              ),
-                              focusedErrorBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 255, 69, 69),
-                                  width: 1.5,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(15, 10, 10, 10),
-                              border: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedTeacher = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
+                      child: _getAdvisorForm(),
                     ),
                     const SizedBox(height: 24),
                     Container(
@@ -207,57 +104,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                               fontWeight: FontWeight.w600,
                               color: const Color.fromARGB(255, 24, 143, 121),
                             ),
-                            decoration: InputDecoration(
-                              constraints: const BoxConstraints(minHeight: 65),
-                              errorBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 255, 69, 69),
-                                  width: 1.5,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              errorStyle: GoogleFonts.sen(
-                                letterSpacing: 0.5,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: const Color.fromARGB(255, 255, 69, 69),
-                              ),
-                              focusedErrorBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 255, 69, 69),
-                                  width: 1.5,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(15, 10, 10, 10),
-                              border: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 24, 143, 121),
-                                  width: 2,
-                                ),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                              ),
-                            ),
+                            decoration: _getDecoration(),
                             onChanged: (value) {
                               setState(() {
                                 if (value != selectedBatch) {
@@ -340,105 +187,9 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                             content:
                                 'Hello, I am ${selectedTeacher!.name}, your advisor. You can ask me anything related to your academics.',
                             createdAt: DateTime.now().millisecondsSinceEpoch,
+                            type: 0,
                           );
-                          final advisorGroupId =
-                              '${selectedTeacher!.uid}$selectedBatch';
-                          // if group already exists, warn the user
-                          // else create a new group
-                          final docRef = FirebaseFirestore.instance
-                              .collection('advisor groups')
-                              .doc(advisorGroupId);
-                          docRef.get().then(
-                            (doc) {
-                              if (doc.exists) {
-                                final String assignedSections =
-                                    doc['sections'].join(', ');
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Warning'),
-                                    content: Text(
-                                      'This advisor is already assigned to the following sections: $assignedSections of batch $selectedBatch. Re-assigning will delete the existing group. Do you want to continue?',
-                                      style: GoogleFonts.sen(
-                                        letterSpacing: 0.5,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.normal,
-                                        color: const Color.fromARGB(
-                                            255, 24, 143, 121),
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('Cancel'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text('Continue'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          docRef.set({
-                                            'batch': selectedBatch,
-                                            'users': FieldValue.arrayUnion(
-                                                [selectedTeacher!.toJson()]),
-                                            'sections': FieldValue.arrayUnion(
-                                                selectedSection),
-                                            'chats': FieldValue.arrayUnion(
-                                                [firstMessage.toJson()]),
-                                          }).then(
-                                            (value) {
-                                              Fluttertoast.showToast(
-                                                msg:
-                                                    'Advisor assigned successfully',
-                                                toastLength: Toast.LENGTH_SHORT,
-                                                gravity: ToastGravity.BOTTOM,
-                                                timeInSecForIosWeb: 1,
-                                                backgroundColor: Colors.green
-                                                    .withOpacity(0.8),
-                                                textColor: Colors.white,
-                                                fontSize: 16.0,
-                                              );
-                                              // Navigator.pop(context);
-                                              // clear the selected values
-                                              setState(() {
-                                                selectedSection.clear();
-                                              });
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                docRef.set({
-                                  'batch': selectedBatch,
-                                  'users': [selectedTeacher!.toJson()],
-                                  'sections': selectedSection,
-                                  'chats': [firstMessage.toJson()],
-                                }).then(
-                                  (value) {
-                                    Fluttertoast.showToast(
-                                      msg: 'Advisor assigned successfully',
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor:
-                                          Colors.green.withOpacity(0.8),
-                                      textColor: Colors.white,
-                                      fontSize: 16.0,
-                                    );
-                                    // Navigator.pop(context);
-                                    // clear the selected values
-                                    setState(() {
-                                      selectedSection.clear();
-                                    });
-                                  },
-                                );
-                              }
-                            },
-                          );
+                          _handleAdvisorAssign(context, firstMessage);
                         }
                       },
                     ),
@@ -447,6 +198,257 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
               ),
             ),
           );
+  }
+
+  Future<void> _handleAdvisorAssign(
+      BuildContext context, Message firstMessage) {
+    final advisorGroupId = '${selectedTeacher!.uid}$selectedBatch';
+    // if group already exists, warn the user
+    // else create a new group
+    final docRef = FirebaseFirestore.instance
+        .collection('advisor groups')
+        .doc(advisorGroupId);
+    return docRef.get().then(
+      (doc) {
+        if (doc.exists) {
+          final String assignedSections = doc['sections'].join(', ');
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Warning'),
+              content: Text(
+                'This advisor is already assigned to the following sections: $assignedSections of batch $selectedBatch. Re-assigning will delete the existing group. Do you want to continue?',
+                style: GoogleFonts.sen(
+                  letterSpacing: 0.5,
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: const Color.fromARGB(255, 24, 143, 121),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Continue'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    docRef.set({
+                      'batch': selectedBatch,
+                      'members': FieldValue.arrayUnion([selectedTeacher!.uid]),
+                      'sections': FieldValue.arrayUnion(selectedSection),
+                      'lastMessage': firstMessage.toJson(),
+                    }).then((value) {
+                      return docRef
+                          .collection('messages')
+                          .doc(firstMessage.createdAt.toString())
+                          .set(firstMessage.toJson());
+                    }).then(
+                      (value) {
+                        Fluttertoast.showToast(
+                          msg: 'Advisor assigned successfully',
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.green.withOpacity(0.8),
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+                        // Navigator.pop(context);
+                        // clear the selected values
+                        setState(() {
+                          selectedSection.clear();
+                        });
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        } else {
+          docRef.set({
+            'batch': selectedBatch,
+            'members': [selectedTeacher!.uid],
+            'sections': selectedSection,
+            'lastMessage': firstMessage.toJson(),
+          }).then((value) {
+            return docRef
+                .collection('messages')
+                .doc(firstMessage.createdAt.toString())
+                .set(firstMessage.toJson());
+          }).then(
+            (value) {
+              Fluttertoast.showToast(
+                msg: 'Advisor assigned successfully',
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.green.withOpacity(0.8),
+                textColor: Colors.white,
+                fontSize: 16.0,
+              );
+              // Navigator.pop(context);
+              // clear the selected values
+              setState(() {
+                selectedSection.clear();
+              });
+            },
+          );
+        }
+      },
+    );
+  }
+
+  InputDecoration _getDecoration() {
+    return InputDecoration(
+      constraints: const BoxConstraints(minHeight: 65),
+      errorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Color.fromARGB(255, 255, 69, 69),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      errorStyle: GoogleFonts.sen(
+        letterSpacing: 0.5,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: const Color.fromARGB(255, 255, 69, 69),
+      ),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Color.fromARGB(255, 255, 69, 69),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Color.fromARGB(255, 24, 143, 121),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Color.fromARGB(255, 24, 143, 121),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Color.fromARGB(255, 24, 143, 121),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+    );
+  }
+
+  Column _getAdvisorForm() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Teacher',
+          style: TextStyle(
+            letterSpacing: 0.5,
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: Color.fromARGB(255, 24, 143, 121),
+          ),
+        ),
+        const SizedBox(height: 4),
+        DropdownButtonFormField(
+          hint: Text(
+            'No Teacher Assigned',
+            style: GoogleFonts.sen(
+              letterSpacing: 0.5,
+              fontSize: 18,
+              fontWeight: FontWeight.normal,
+              color: const Color.fromARGB(255, 24, 143, 121),
+            ),
+          ),
+          items: widget.teacherList.map((teacher) {
+            return DropdownMenuItem(
+              value: teacher,
+              child: Text(
+                '${teacher.initials}, ${teacher.name}',
+                style: GoogleFonts.sen(
+                  letterSpacing: 0.5,
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                  color: const Color.fromARGB(255, 24, 143, 121),
+                ),
+              ),
+            );
+          }).toList(),
+          style: GoogleFonts.sen(
+            letterSpacing: 0.5,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: const Color.fromARGB(255, 24, 143, 121),
+          ),
+          decoration: InputDecoration(
+            constraints: const BoxConstraints(minHeight: 65),
+            errorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromARGB(255, 255, 69, 69),
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            errorStyle: GoogleFonts.sen(
+              letterSpacing: 0.5,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: const Color.fromARGB(255, 255, 69, 69),
+            ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromARGB(255, 255, 69, 69),
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
+            border: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromARGB(255, 24, 143, 121),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromARGB(255, 24, 143, 121),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromARGB(255, 24, 143, 121),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+          onChanged: (value) {
+            setState(() {
+              selectedTeacher = value;
+            });
+          },
+        ),
+      ],
+    );
   }
 
   List<Widget> getSectionChips() {

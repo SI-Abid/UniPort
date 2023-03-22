@@ -1,6 +1,6 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'version_1/services/helper.dart';
@@ -43,37 +43,38 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: Consumer<User>(
-            builder: (context, User user, child) {
-              final userProvider = context.read<User>();
-              if (userProvider.isLoggedIn) {
-                return const HomeScreen();
-              }
-              return const LoginScreen();
-            },
-          )
-          // StreamBuilder(
-          //   stream: FirebaseAuth.instance.authStateChanges(),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.active) {
-          //       if (snapshot.hasData) {
-          //         return const HomeScreen();
-          //       }
-          //       return const LoginScreen();
+          home: 
+          // Consumer<User>(
+          //   builder: (context, User user, child) {
+          //     final userProvider = context.read<User>();
+          //     if (userProvider.isLoggedIn) {
+          //       return const HomeScreen();
           //     }
-          //     return FutureBuilder(
-          //       future: Connectivity().checkConnectivity(),
-          //       builder: (context, snapshot) {
-          //         if (snapshot.connectionState == ConnectionState.done) {
-          //           if (snapshot.data == ConnectivityResult.none) {
-          //             return const LoginScreen();
-          //           }
-          //         }
-          //         return const LoadingScreen();
-          //       },
-          //     );
+          //     return const LoginScreen();
           //   },
-          // ),
+          // )
+          StreamBuilder(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.active) {
+                if (snapshot.hasData) {
+                  return const HomeScreen();
+                }
+                return const LoginScreen();
+              }
+              return FutureBuilder(
+                future: Connectivity().checkConnectivity(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.data == ConnectivityResult.none) {
+                      return const LoginScreen();
+                    }
+                  }
+                  return const LoadingScreen();
+                },
+              );
+            },
+          ),
           ),
     );
   }

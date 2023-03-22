@@ -82,11 +82,9 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   formKey.currentState!.save();
                   String tid = tIdController.text.trim();
                   String initial = intialController.text.trim().toUpperCase();
-                  String dept = deptController.text.trim();
                   loggedInUser.usertype = 'teacher';
                   loggedInUser.teacherId = tid;
                   loggedInUser.initials = initial;
-                  loggedInUser.department = dept;
                   loggedInUser.isHod = checkbox.isChecked;
                   debugPrint('Teacher page: $loggedInUser', wrapWidth: 1024);
                   Navigator.push(
@@ -274,7 +272,8 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                 ))
             .toList(),
         onChanged: (value) => setState(() {
-          loggedInUser.designation = value.toString();
+          // print(value.toString());
+          loggedInUser.department = value.toString();
           formKey.currentState!.validate();
         }),
       ),

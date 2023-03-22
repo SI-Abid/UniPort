@@ -40,6 +40,7 @@ class ChatTile extends StatelessWidget {
           softWrap: true,
           maxLines: 1,
           style: GoogleFonts.sen(
+            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
@@ -50,7 +51,7 @@ class ChatTile extends StatelessWidget {
                 softWrap: true,
                 maxLines: 1,
                 style: GoogleFonts.sen(
-                  color: Colors.black,
+                  color: Colors.grey.shade800,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                 ),

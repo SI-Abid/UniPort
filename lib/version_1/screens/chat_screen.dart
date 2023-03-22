@@ -35,12 +35,15 @@ class ChatScreen extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('chats')
-                .where('users', arrayContains: loggedInUser.toJson())
+                .where('members', arrayContains: loggedInUser.uid)
                 .orderBy('lastMessage.createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingScreen();
+              }
+              if (snapshot.data==null) {
+                return const SizedBox.shrink();
               }
               final List<Map<String, dynamic>> docs = snapshot.data!.docs
                   .map<Map<String, dynamic>>((e) => e.data())
@@ -52,23 +55,26 @@ class ChatScreen extends StatelessWidget {
                 ),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
-                  List<User> users = docs[index]['users']
-                      .map<User>(
-                          (e) => User.fromJson(e as Map<String, dynamic>))
-                      .toList();
-                  users.removeWhere(
-                      (element) => element.uid == loggedInUser.uid);
-                  User messageSender = users.first;
+                  List users = docs[index]['members'].toList();
+                  users.removeWhere((element) => element == loggedInUser.uid);
+                  String senderId = users.first;
                   Message lastMessage = Message.fromJson(
                       docs[index]['lastMessage'] as Map<String, dynamic>);
                   bool isMe = lastMessage.sender == loggedInUser.uid;
                   bool isAfter = lastMessage.createdAt >
                       (docs[index][loggedInUser.uid] ?? 0);
-                  return ChatTile(
-                    lastMsg: lastMessage,
-                    messageSender: messageSender,
-                    isUnread: !isMe && isAfter,
-                  );
+                  return FutureBuilder(
+                      future: getUser(senderId),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return ChatTile(
+                            lastMsg: lastMessage,
+                            messageSender: snapshot.data as User,
+                            isUnread: !isMe && isAfter,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      });
                 },
               );
             },
@@ -90,5 +96,11 @@ class ChatScreen extends StatelessWidget {
         child: const Icon(Icons.textsms_rounded),
       ),
     );
+  }
+
+  Future<User> getUser(String uid) async {
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    return User.fromJson(doc.data()!);
   }
 }

@@ -30,7 +30,6 @@ class _MessageScreenState extends State<MessageScreen> {
   int count = 0;
   bool profileViewed = false;
 
-  bool _isUploading = false;
   bool _showEmoji = false;
   int _limit = 20;
   final int _limitIncrement = 20;
@@ -108,16 +107,38 @@ class _MessageScreenState extends State<MessageScreen> {
                     builder: (context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
                         final data = snapshot.data;
-                        return Text(
-                          data['online']
-                              ? 'Online'
-                              : 'Last seen: ${formatTime(data['lastSeen'])}',
-                          style: GoogleFonts.sen(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
-                          ),
-                        );
+                        return data['online']
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Online',
+                                    style: GoogleFonts.sen(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    height: 8,
+                                    width: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Last seen: ${formatTime(data['lastSeen'])}',
+                                style: GoogleFonts.sen(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
+                              );
                       } else {
                         return const Text('Loading...');
                       }
@@ -241,8 +262,6 @@ class _MessageScreenState extends State<MessageScreen> {
                       ),
                       if (profileViewed)
                         ProfileCard(messageSender: messageSender),
-                      if (_isUploading)
-                        const Center(child: CircularProgressIndicator())
                     ],
                   ),
                 ),
@@ -356,9 +375,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       // uploading & sending image one by one
                       for (var i in images) {
                         debugPrint('Image Path: ${i.path}');
-                        setState(() => _isUploading = true);
                         await sendChatImage(widget.messageSender, File(i.path));
-                        setState(() => _isUploading = false);
                       }
                     },
                     icon: Icon(
@@ -377,11 +394,9 @@ class _MessageScreenState extends State<MessageScreen> {
                           source: ImageSource.camera, imageQuality: 70);
                       if (image != null) {
                         debugPrint('Image Path: ${image.path}');
-                        setState(() => _isUploading = true);
 
                         await sendChatImage(
                             widget.messageSender, File(image.path));
-                        setState(() => _isUploading = false);
                       }
                     },
                     icon: Icon(
@@ -404,7 +419,13 @@ class _MessageScreenState extends State<MessageScreen> {
               onPressed: () {
                 String message = _controller.text.trim();
                 if (message.isNotEmpty) {
-                  _sendMessage(message, 0);
+                  Message msg = Message(
+                    sender: loggedInUser.uid,
+                    content: message,
+                    createdAt: DateTime.now().millisecondsSinceEpoch,
+                    type: 0,
+                  );
+                  loggedInUser.sendMessageToUser(widget.messageSender, msg);
                   _controller.clear();
                   if (_scrollController.hasClients) {
                     _scrollController.animateTo(0,
@@ -440,37 +461,17 @@ class _MessageScreenState extends State<MessageScreen> {
         .putFile(file, SettableMetadata(contentType: 'image/$ext'))
         .then((taskSnapshot) {
       debugPrint(
-          'Data Transferred: ${taskSnapshot.bytesTransferred / 1000} kb');
+          'Data Transferred: ${taskSnapshot.bytesTransferred / 1024} kb');
     });
 
     //updating image in firestore database
     final imageUrl = await ref.getDownloadURL();
-    _sendMessage(imageUrl, 1);
-  }
-
-  // send message
-  void _sendMessage(String content, int type) {
-    final int messageCreationTime = DateTime.now().millisecondsSinceEpoch;
-    final chatId = getChatId(loggedInUser.uid, widget.messageSender.uid);
-    final DocumentReference docRef = FirebaseFirestore.instance
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .doc(messageCreationTime.toString());
-
     final message = Message(
-      type: type,
+      content: imageUrl,
       sender: loggedInUser.uid,
-      content: content,
-      createdAt: messageCreationTime,
+      type: 1,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
     );
-
-    FirebaseFirestore.instance.collection('chats').doc(chatId).set({
-      'lastMessage': message.toJson(),
-      'users': [loggedInUser.toJson(), widget.messageSender.toJson()],
-    }, SetOptions(merge: true));
-    FirebaseFirestore.instance.runTransaction((transaction) async {
-      transaction.set(docRef, message.toJson());
-    });
+    loggedInUser.sendMessageToUser(chatUser, message);
   }
 }

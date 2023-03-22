@@ -1,12 +1,12 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_auth/email_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_notification_channel/flutter_notification_channel.dart';
+import 'package:flutter_notification_channel/notification_importance.dart';
+import 'package:flutter_notification_channel/notification_visibility.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,9 +18,35 @@ import 'providers.dart';
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FlutterNotificationChannel.registerNotificationChannel(
+    id: 'chat',
+    name: 'Chat',
+    description: 'Chat notifications',
+    importance: NotificationImportance.IMPORTANCE_HIGH,
+  );
+  FirebaseMessaging.instance.requestPermission();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  //   alert: true,
+  //   announcement: false,
+  //   badge: true,
+  //   carPlay: false,
+  //   criticalAlert: false,
+  //   provisional: false,
+  //   sound: true,
+  // );
+  // print('User granted Permission: ${settings.authorizationStatus}');
+  // final pushToken = await FirebaseMessaging.instance.getToken();
+  // print('Token: $fcmToken');
+  // FirebaseMessaging.onMessage.listen((event) {
+  //   print('Got message: ${event.data}');
+  //   if (event.notification != null) {
+  //     print('Message contains a notification: ${event.notification}');
+  //   }
+  // });
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
-  await DefaultCacheManager().emptyCache();
+  // await DefaultCacheManager().emptyCache();
   prefs = await SharedPreferences.getInstance();
   google = GoogleSignIn(scopes: <String>[
     'email',
@@ -28,6 +54,8 @@ Future<void> initiate() async {
   loggedInUser = User();
   await loggedInUser.load();
 }
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 String getChatId(String uid1, String uid2) {
   if (uid1.compareTo(uid2) == 1) {

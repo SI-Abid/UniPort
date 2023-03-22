@@ -63,8 +63,11 @@ class _GroupChatState extends State<GroupChat> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    GroupChatScreen(groupId: groupIds[index]),
+                                builder: (context) => GroupChatScreen(
+                                  groupId: groupIds[index],
+                                  title:
+                                      '${groupsList[index]['batch']} ${groupsList[index]['sections'].join('+')}',
+                                ),
                               ),
                             );
                           },
@@ -102,19 +105,21 @@ class _GroupChatState extends State<GroupChat> {
                                 ),
                               ),
                               title: Text(
-                                'SECTION',
+                                'Advising ${groupsList[index]['batch']} ${groupsList[index]['sections'].join('+')}',
                                 style: GoogleFonts.sen(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey.shade900,
                                 ),
                               ),
                               subtitle: Text(
-                                '${groupsList[index]['sections'].join(' ')}',
+                                '${groupsList[index]['lastMessage']['content']}',
+                                softWrap: true,
+                                maxLines: 1,
                                 style: GoogleFonts.sen(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors.grey.shade900,
+                                  color: Colors.grey.shade800,
                                 ),
                               ),
                             ),

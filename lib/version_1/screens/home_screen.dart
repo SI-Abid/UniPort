@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import '../models/models.dart';
@@ -18,7 +19,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    setupInteractedMessage();
     WidgetsBinding.instance.addObserver(this);
+    if (loggedInUser.pushToken == null) {
+      loggedInUser.updatePushToken();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> setupInteractedMessage() async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    if (message.data['type'] == 'chat') {
+      final senderId = message.data['sender'];
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(senderId)
+          .get()
+          .then((value) {
+        final sender = User.fromJson(value.data()!);
+        Navigator.of(context).pushNamed('/message', arguments: sender);
+      });
+    }
   }
 
   @override
@@ -47,8 +89,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              loggedInUser.signOut().then(
-                  (value) => Navigator.pushReplacementNamed(context, '/login'));
+              Navigator.of(context).pushNamed('/loading');
+              loggedInUser.signOut().then((value) {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/login', (route) => false);
+              });
             },
             child: Card(
               elevation: 2,
@@ -67,19 +112,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ],
         elevation: 0,
       ),
-      body: Container(
-        alignment: Alignment.center,
-        width: double.infinity,
+      body: SingleChildScrollView(
         child: SizedBox(
-          // color: Colors.amber,
-          width: ratio < 1 ? 450 : 650,
-          child: GridView.count(
-            primary: false,
-            padding: const EdgeInsets.all(20),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 20,
-            crossAxisCount: ratio < 1 ? 2 : 3,
-            childAspectRatio: ratio < 1 ? 0.75 : 0.95,
+          width: double.infinity,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            runSpacing: 10,
+            spacing: 10,
             children: [
               // NOTE: for all users
               const CustomCard(
