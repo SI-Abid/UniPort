@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           .get()
           .then((value) {
         final sender = User.fromJson(value.data()!);
-        Navigator.of(context).pushNamed('/message', arguments: sender);
+        Navigator.of(context).pushReplacementNamed('/message', arguments: sender);
       });
     }
   }
