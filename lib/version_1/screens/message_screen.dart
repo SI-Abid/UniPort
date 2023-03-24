@@ -187,7 +187,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   FirebaseStorage.instance
                       .ref()
                       .child('images/$chatId')
-                      .list().then((value) => value.items.forEach((element) {
+                      .list()
+                      .then((value) => value.items.forEach((element) {
                             print(element.name);
                             // element.delete();
                           }));
@@ -256,11 +257,13 @@ class _MessageScreenState extends State<MessageScreen> {
                             itemBuilder: (context, index) {
                               final message = messageList[index];
                               final isMe = message.sender == loggedInUser.uid;
-
+                              Message? nextMssg =
+                                  index != 0 ? messageList[index - 1] : null;
                               return MessageTile(
                                 chatId: chatId,
                                 message: message,
                                 isMe: isMe,
+                                nextMsg: nextMssg,
                               );
                             },
                           );

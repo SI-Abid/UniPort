@@ -15,10 +15,12 @@ class MessageTile extends StatelessWidget {
       {super.key,
       required this.message,
       required this.isMe,
-      required this.chatId});
+      required this.chatId,
+      this.nextMsg});
   final Message message;
   final bool isMe;
   final String chatId;
+  final Message? nextMsg;
   @override
   Widget build(BuildContext context) {
     if (!isMe && message.readAt == null) {
@@ -26,10 +28,10 @@ class MessageTile extends StatelessWidget {
     }
     return Container(
       padding: EdgeInsets.only(
-        top: 4,
-        bottom: 4,
-        left: isMe ? 0 : MediaQuery.of(context).size.width * 0.015,
-        right: isMe ? MediaQuery.of(context).size.width * 0.015 : 0,
+        top: 2,
+        bottom: 2,
+        left: isMe ? 0 : MediaQuery.of(context).size.width * 0.02,
+        right: isMe ? MediaQuery.of(context).size.width * 0.02 : 0,
       ),
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
@@ -52,14 +54,14 @@ class MessageTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: isMe
                           ? const BorderRadius.only(
-                              topLeft: Radius.circular(23),
-                              topRight: Radius.circular(23),
-                              bottomLeft: Radius.circular(23),
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                              bottomLeft: Radius.circular(16),
                             )
                           : const BorderRadius.only(
-                              topLeft: Radius.circular(23),
-                              topRight: Radius.circular(23),
-                              bottomRight: Radius.circular(23),
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
                             ),
                       color: isMe
                           ? Colors.teal.shade800
@@ -68,10 +70,7 @@ class MessageTile extends StatelessWidget {
                     child: Text(
                       message.content,
                       style: GoogleFonts.sen(
-                        fontSize: message.content
-                                .contains(RegExp(r'[^\u0000-\u007F]'))
-                            ? 22
-                            : 16,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: isMe ? Colors.white : Colors.black,
                       ),
@@ -146,33 +145,54 @@ class MessageTile extends StatelessWidget {
                   ),
           ),
           const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment:
-                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-            textDirection: isMe ? TextDirection.rtl : TextDirection.ltr,
-            children: [
-              Text(
-                formatTime(message.createdAt),
-                style: GoogleFonts.sen(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87),
-              ),
-              const SizedBox(width: 5),
-              message.readAt == null
-                  ? Icon(
-                      Icons.done,
-                      size: 12,
-                      color: Colors.teal.shade800,
+          isMe
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    Text(
+                      formatTime(message.createdAt),
+                      style: GoogleFonts.sen(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87),
+                    ),
+                    const SizedBox(width: 5),
+                    message.readAt == null
+                        ? Icon(
+                            Icons.done,
+                            size: 12,
+                            color: Colors.teal.shade800,
+                          )
+                        : Icon(
+                            Icons.done_all,
+                            size: 12,
+                            color: Colors.teal.shade800,
+                          )
+                  ],
+                )
+              : message.sender != nextMsg?.sender
+                  ? Text(
+                      formatTime(message.createdAt),
+                      style: GoogleFonts.sen(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87),
                     )
-                  : Icon(
-                      Icons.done_all,
-                      size: 12,
-                      color: Colors.teal.shade800,
-                    )
-            ],
-          ),
+                  : DateTime.fromMillisecondsSinceEpoch(message.createdAt)
+                              .minute !=
+                          DateTime.fromMillisecondsSinceEpoch(
+                                  nextMsg!.createdAt)
+                              .minute
+                      ? Text(
+                          formatTime(message.createdAt),
+                          style: GoogleFonts.sen(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87),
+                        )
+                      : const SizedBox.shrink()
         ],
       ),
     );
