@@ -66,11 +66,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    final isBg = state == AppLifecycleState.paused;
-    final isScreen = state == AppLifecycleState.resumed;
-    if (isScreen) {
+    if(state==AppLifecycleState.resumed){
       loggedInUser.updateOnlineStatus(true);
-    } else if (isBg) {
+      loggedInUser.updatePushToken();
+    }else{
       loggedInUser.updateOnlineStatus(false);
     }
     debugPrint('HomeScreen: $state');

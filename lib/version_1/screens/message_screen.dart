@@ -59,9 +59,6 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
-    FirebaseFirestore.instance.collection('chats').doc(chatId).set(
-        {loggedInUser.uid: DateTime.now().millisecondsSinceEpoch},
-        SetOptions(merge: true));
     super.dispose();
   }
 
@@ -186,10 +183,18 @@ class _MessageScreenState extends State<MessageScreen> {
                       .collection('chats')
                       .doc(chatId)
                       .delete();
+                  print('storage path: images/$chatId');
                   FirebaseStorage.instance
                       .ref()
                       .child('images/$chatId')
-                      .delete();
+                      .list().then((value) => value.items.forEach((element) {
+                            print(element.name);
+                            // element.delete();
+                          }));
+                  // FirebaseStorage.instance
+                  //     .ref()
+                  //     .child('images/$chatId')
+                  //     .delete();
                 }
               },
             ),
@@ -253,6 +258,7 @@ class _MessageScreenState extends State<MessageScreen> {
                               final isMe = message.sender == loggedInUser.uid;
 
                               return MessageTile(
+                                chatId: chatId,
                                 message: message,
                                 isMe: isMe,
                               );

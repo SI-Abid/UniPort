@@ -42,7 +42,7 @@ class ChatScreen extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingScreen();
               }
-              if (snapshot.data==null) {
+              if (snapshot.data == null) {
                 return const SizedBox.shrink();
               }
               final List<Map<String, dynamic>> docs = snapshot.data!.docs
@@ -60,9 +60,6 @@ class ChatScreen extends StatelessWidget {
                   String senderId = users.first;
                   Message lastMessage = Message.fromJson(
                       docs[index]['lastMessage'] as Map<String, dynamic>);
-                  bool isMe = lastMessage.sender == loggedInUser.uid;
-                  bool isAfter = lastMessage.createdAt >
-                      (docs[index][loggedInUser.uid] ?? 0);
                   return FutureBuilder(
                       future: getUser(senderId),
                       builder: (context, snapshot) {
@@ -70,7 +67,6 @@ class ChatScreen extends StatelessWidget {
                           return ChatTile(
                             lastMsg: lastMessage,
                             messageSender: snapshot.data as User,
-                            isUnread: !isMe && isAfter,
                           );
                         }
                         return const SizedBox.shrink();

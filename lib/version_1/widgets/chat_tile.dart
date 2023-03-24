@@ -10,16 +10,15 @@ class ChatTile extends StatelessWidget {
   const ChatTile(
       {super.key,
       required this.lastMsg,
-      required this.messageSender,
-      required this.isUnread});
+      required this.messageSender});
 
   final Message lastMsg;
   final User messageSender;
-  final bool isUnread;
 
   @override
   Widget build(BuildContext context) {
     bool isMe = lastMsg.sender == loggedInUser.uid;
+    bool isUnread = lastMsg.readAt == null && !isMe;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

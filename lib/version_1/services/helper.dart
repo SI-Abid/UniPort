@@ -18,15 +18,16 @@ import 'providers.dart';
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FlutterNotificationChannel.registerNotificationChannel(
+  final result = await FlutterNotificationChannel.registerNotificationChannel(
     id: 'chat',
     name: 'Chat',
     description: 'Chat notifications',
     importance: NotificationImportance.IMPORTANCE_HIGH,
   );
+
   FirebaseMessaging.instance.requestPermission();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+  
   //   alert: true,
   //   announcement: false,
   //   badge: true,
@@ -55,7 +56,9 @@ Future<void> initiate() async {
   await loggedInUser.load();
 }
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  
+}
 
 String getChatId(String uid1, String uid2) {
   if (uid1.compareTo(uid2) == 1) {
@@ -72,14 +75,14 @@ Future<List<User>> userList() => FirebaseFirestore.instance
     .get()
     .then((value) => value.docs.map((e) => User.fromJson(e.data())).toList());
 
-Stream<List<Chat>> chatStream() => FirebaseFirestore.instance
-    .collection('chats')
-    .where(
-      'users',
-      arrayContains: loggedInUser.toJson(),
-    )
-    .snapshots()
-    .map((event) => event.docs.map((e) => Chat.fromJson(e.data())).toList());
+// Stream<List<Chat>> chatStream() => FirebaseFirestore.instance
+//     .collection('chats')
+//     .where(
+//       'users',
+//       arrayContains: loggedInUser.toJson(),
+//     )
+//     .snapshots()
+//     .map((event) => event.docs.map((e) => Chat.fromJson(e.data())).toList());
 
 String formatTime(int miliseconds) {
   final time = DateTime.fromMillisecondsSinceEpoch(miliseconds);

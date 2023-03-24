@@ -265,7 +265,7 @@ class User extends ChangeNotifier {
       },
       body: jsonEncode(body),
     );
-    print(response.body);
+    print('Push: ${response.body}');
   }
 
   Future<bool> loginWithEmail(String email, String password) async {
@@ -366,7 +366,7 @@ class User extends ChangeNotifier {
     if (uid.isEmpty) {
       return;
     }
-    pushToken = (await FirebaseMessaging.instance.getToken()).toString();
+    pushToken = await FirebaseMessaging.instance.getToken();
     FirebaseFirestore.instance.collection('users').doc(uid).update({
       'pushToken': pushToken,
     });

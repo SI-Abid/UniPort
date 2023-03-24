@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,11 +11,19 @@ import '../models/models.dart';
 import '../services/helper.dart';
 
 class MessageTile extends StatelessWidget {
-  const MessageTile({super.key, required this.message, required this.isMe});
+  const MessageTile(
+      {super.key,
+      required this.message,
+      required this.isMe,
+      required this.chatId});
   final Message message;
   final bool isMe;
+  final String chatId;
   @override
   Widget build(BuildContext context) {
+    if (!isMe && message.readAt == null) {
+      message.markAsRead(chatId);
+    }
     return Container(
       padding: EdgeInsets.only(
         top: 4,
@@ -28,37 +37,18 @@ class MessageTile extends StatelessWidget {
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         // mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          message.type == 0
-              ? GestureDetector(
-                  onLongPress: () {
-                    // text copy to clipboard
-                    Clipboard.setData(ClipboardData(text: message.content))
-                        .then((value) => Fluttertoast.showToast(
-                            msg: 'Copied to Clipboard',
-                            backgroundColor: Colors.grey.shade700,
-                            textColor: Colors.white,
-                            fontSize: 16,
-                            gravity: ToastGravity.BOTTOM,
-                            toastLength: Toast.LENGTH_SHORT));
-                  },
-                  child: Container(
+          GestureDetector(
+            onLongPress: () {
+              // text copy to clipboard
+              _getMessageAction(context);
+            },
+            child: message.type == 0
+                ? Container(
                     margin: isMe
                         ? const EdgeInsets.only(left: 55)
                         : const EdgeInsets.only(right: 55),
-                    padding:
-                        message.content.contains(RegExp(r'[^\u0000-\u007F]'))
-                            ? const EdgeInsets.only(
-                                top: 8,
-                                bottom: 8,
-                                left: 10,
-                                right: 10,
-                              )
-                            : const EdgeInsets.only(
-                                top: 10,
-                                bottom: 10,
-                                left: 15,
-                                right: 15,
-                              ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       borderRadius: isMe
                           ? const BorderRadius.only(
@@ -86,85 +76,173 @@ class MessageTile extends StatelessWidget {
                         color: isMe ? Colors.white : Colors.black,
                       ),
                     ),
-                  ),
-                )
-              // Image
-              : Container(
-                  margin: isMe
-                      ? const EdgeInsets.only(left: 55)
-                      : const EdgeInsets.only(right: 55),
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ImageScreen(
-                                    imageUrl: message.content,
-                                  )));
-                    },
-                    style: ButtonStyle(
-                        padding: MaterialStateProperty.all<EdgeInsets>(
-                            const EdgeInsets.all(0))),
-                    child: Material(
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      clipBehavior: Clip.hardEdge,
-                      child: Image.network(
-                        message.content,
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: const BorderRadius.all(
+                  )
+                // Image
+                : Container(
+                    margin: isMe
+                        ? const EdgeInsets.only(left: 55)
+                        : const EdgeInsets.only(right: 55),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ImageScreen(
+                                      imageUrl: message.content,
+                                    )));
+                      },
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.all(0))),
+                      child: Material(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8)),
+                        clipBehavior: Clip.hardEdge,
+                        child: Image.network(
+                          message.content,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(8),
+                                ),
+                              ),
+                              width: 200,
+                              height: 200,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.teal.shade800,
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, object, stackTrace) {
+                            return const Material(
+                              borderRadius: BorderRadius.all(
                                 Radius.circular(8),
                               ),
-                            ),
-                            width: 200,
-                            height: 200,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.teal.shade800,
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
+                              clipBehavior: Clip.hardEdge,
+                              child: Icon(
+                                Icons.image,
+                                color: Colors.red,
+                                size: 50,
                               ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, object, stackTrace) {
-                          return const Material(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(8),
-                            ),
-                            clipBehavior: Clip.hardEdge,
-                            child: Icon(
-                              Icons.image,
-                              color: Colors.red,
-                              size: 50,
-                            ),
-                          );
-                        },
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
+                            );
+                          },
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
-                ),
+          ),
           const SizedBox(height: 2),
-          Text(
-            formatTime(message.createdAt),
-            style: GoogleFonts.sen(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            textDirection: isMe ? TextDirection.rtl : TextDirection.ltr,
+            children: [
+              Text(
+                formatTime(message.createdAt),
+                style: GoogleFonts.sen(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87),
+              ),
+              const SizedBox(width: 5),
+              message.readAt == null
+                  ? Icon(
+                      Icons.done,
+                      size: 12,
+                      color: Colors.teal.shade800,
+                    )
+                  : Icon(
+                      Icons.done_all,
+                      size: 12,
+                      color: Colors.teal.shade800,
+                    )
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<dynamic> _getMessageAction(BuildContext context) {
+    return showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+        ),
+        builder: (context) {
+          return SizedBox(
+            height: 200,
+            child: Column(
+              children: [
+                message.type == 0
+                    ? ListTile(
+                        leading: const Icon(Icons.copy),
+                        title: const Text('Copy'),
+                        onTap: () {
+                          // hide bottom sheet
+                          Navigator.pop(context);
+                          Clipboard.setData(
+                                  ClipboardData(text: message.content))
+                              .then((value) => Fluttertoast.showToast(
+                                  msg: 'Copied to Clipboard',
+                                  backgroundColor: Colors.grey.shade700,
+                                  textColor: Colors.white,
+                                  fontSize: 16,
+                                  gravity: ToastGravity.BOTTOM,
+                                  toastLength: Toast.LENGTH_SHORT));
+                        },
+                      )
+                    : ListTile(
+                        leading: const Icon(Icons.save),
+                        title: const Text('Save'),
+                        onTap: () {
+                          GallerySaver.saveImage(message.content).then(
+                              (value) => Fluttertoast.showToast(
+                                  msg: 'Saved to Gallery',
+                                  backgroundColor: Colors.grey.shade700,
+                                  textColor: Colors.white,
+                                  fontSize: 16,
+                                  gravity: ToastGravity.BOTTOM,
+                                  toastLength: Toast.LENGTH_SHORT));
+                        },
+                      ),
+                const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Divider(
+                    height: 1,
+                    thickness: 1,
+                  ),
+                ),
+                if (isMe)
+                  ListTile(
+                    leading: const Icon(Icons.delete),
+                    title: const Text('Delete'),
+                    onTap: () {
+                      // hide bottom sheet
+                      Navigator.pop(context);
+                      // delete message
+                      message.delete(chatId);
+                    },
+                  ),
+              ],
+            ),
+          );
+        });
   }
 }
 
