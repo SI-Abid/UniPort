@@ -240,8 +240,13 @@ class User extends ChangeNotifier {
   }
 
   Future<void> sendPushNotification(User toUser, Message message) async {
+    String userPushToken = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(toUser.uid)
+        .get()
+        .then((value) => value.data()!['pushToken']);
     final body = {
-      'to': toUser.pushToken,
+      'to': userPushToken,
       'notification': {
         'title': loggedInUser.name,
         'body': message.type == 0 ? message.content : 'Image',
