@@ -187,7 +187,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                             content:
                                 'Hello, I am ${selectedTeacher!.name}, your advisor. You can ask me anything related to your academics.',
                             createdAt: DateTime.now().millisecondsSinceEpoch,
-                            type: 0,
+                            type: MessageType.text,
                           );
                           _handleAdvisorAssign(context, firstMessage);
                         }

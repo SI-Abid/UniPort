@@ -432,7 +432,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     sender: loggedInUser.uid,
                     content: message,
                     createdAt: DateTime.now().millisecondsSinceEpoch,
-                    type: 0,
+                    type: MessageType.text,
                   );
                   loggedInUser.sendMessageToUser(widget.messageSender, msg);
                   _controller.clear();
@@ -478,7 +478,7 @@ class _MessageScreenState extends State<MessageScreen> {
     final message = Message(
       content: imageUrl,
       sender: loggedInUser.uid,
-      type: 1,
+      type: MessageType.image,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     loggedInUser.sendMessageToUser(chatUser, message);

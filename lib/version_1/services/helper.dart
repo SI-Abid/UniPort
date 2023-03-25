@@ -18,7 +18,8 @@ import 'providers.dart';
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  final result = await FlutterNotificationChannel.registerNotificationChannel(
+  FirebaseMessaging.instance.setAutoInitEnabled(true);
+  await FlutterNotificationChannel.registerNotificationChannel(
     id: 'chat',
     name: 'Chat',
     description: 'Chat notifications',
@@ -27,24 +28,9 @@ Future<void> initiate() async {
 
   FirebaseMessaging.instance.requestPermission();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  
-  //   alert: true,
-  //   announcement: false,
-  //   badge: true,
-  //   carPlay: false,
-  //   criticalAlert: false,
-  //   provisional: false,
-  //   sound: true,
-  // );
-  // print('User granted Permission: ${settings.authorizationStatus}');
-  // final pushToken = await FirebaseMessaging.instance.getToken();
-  // print('Token: $fcmToken');
-  // FirebaseMessaging.onMessage.listen((event) {
-  //   print('Got message: ${event.data}');
-  //   if (event.notification != null) {
-  //     print('Message contains a notification: ${event.notification}');
-  //   }
-  // });
+  FirebaseMessaging.onMessage.listen((event) {
+    print('Got message in Foreground: ${event.data}');
+  });
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
   // await DefaultCacheManager().emptyCache();
@@ -57,7 +43,8 @@ Future<void> initiate() async {
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  
+  // message contains a map with the message data. Also contains a collapseKey
+  // if the message was sent with collapseKey:
 }
 
 String getChatId(String uid1, String uid2) {

@@ -322,7 +322,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     sender: loggedInUser.uid,
                     content: message,
                     createdAt: DateTime.now().millisecondsSinceEpoch,
-                    type: 0,
+                    type: MessageType.text,
                   );
                   loggedInUser.sendMessageToGroup(widget.groupId, msg);
                   _controller.clear();
@@ -369,7 +369,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final message = Message(
       content: imageUrl,
       sender: loggedInUser.uid,
-      type: 1,
+      type: MessageType.image,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     loggedInUser.sendMessageToGroup(groupId, message);
@@ -418,7 +418,7 @@ class GroupMessageTile extends StatelessWidget {
               ],
             ),
 
-          message.type == 0
+          message.type == MessageType.text
               ? GestureDetector(
                   onLongPress: () {
                     // text copy to clipboard

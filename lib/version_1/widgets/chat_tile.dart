@@ -8,9 +8,7 @@ import '../widgets/widgets.dart';
 
 class ChatTile extends StatelessWidget {
   const ChatTile(
-      {super.key,
-      required this.lastMsg,
-      required this.messageSender});
+      {super.key, required this.lastMsg, required this.messageSender});
 
   final Message lastMsg;
   final User messageSender;
@@ -18,6 +16,7 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isMe = lastMsg.sender == loggedInUser.uid;
+    print('${lastMsg.sender} ${loggedInUser.uid}}');
     bool isUnread = lastMsg.readAt == null && !isMe;
     return Container(
       decoration: BoxDecoration(
@@ -44,7 +43,7 @@ class ChatTile extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        subtitle: lastMsg.type == 0
+        subtitle: lastMsg.type == MessageType.text
             ? Text(
                 '${isMe ? 'You: ' : ''}${lastMsg.content}',
                 softWrap: true,
@@ -57,6 +56,17 @@ class ChatTile extends StatelessWidget {
               )
             : Row(
                 children: [
+                  if(isMe) Text(
+                    'You: ',
+                    softWrap: true,
+                    maxLines: 1,
+                    style: GoogleFonts.sen(
+                      color: Colors.grey.shade800,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  
                   Icon(
                     Icons.image,
                     color: Colors.teal.shade600,

@@ -1,34 +1,54 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:encrypt/encrypt.dart';
 
 class Message {
   final String content; // message content
   final String sender; // uid of the sender
-  final int type; // 0 for text, 1 for image
+  final MessageType type; // type of the message
   final int createdAt; // timestamp of the message
   final int? readAt; // timestamp of the message
   Message({
     required this.content,
     required this.sender,
     required this.createdAt,
-    this.type = 0,
+    this.type = MessageType.text,
     this.readAt,
   });
+  final key = Key.fromLength(32);
   Map<String, dynamic> toJson() {
     return {
-      'content': content,
+      'content': encrypt(content),
       'sender': sender,
       'createdAt': createdAt,
-      'type': type,
+      'type': type.index,
       'readAt': readAt,
     };
   }
 
+  static final _key = Key.fromLength(32);
+  static final _iv = IV.fromLength(16);
+  static final _encrypter = Encrypter(AES(_key));
+
+  static String encrypt(String input) {
+    // final sanitizedInput = input.replaceAll(' ', '');
+    final encrypted = _encrypter.encrypt(input, iv: _iv);
+    return encrypted.base64;
+  }
+
+  static String decrypt(String encryptedString) {
+    final encrypted = Encrypted.fromBase64(encryptedString);
+    final decrypted = _encrypter.decrypt(encrypted, iv: _iv);
+    return decrypted;
+  }
+
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      content: json['content'],
+      content: decrypt(json['content']),
       sender: json['sender'],
       createdAt: json['createdAt'],
-      type: json['type'] ?? 0,
+      type: MessageType.values[json['type']],
       readAt: json['readAt'],
     );
   }
@@ -51,4 +71,18 @@ class Message {
         .doc(createdAt.toString())
         .delete();
   }
+
+  void update(String newMsg, String chatId) {
+    FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(createdAt.toString())
+        .update({'content': newMsg});
+  }
+}
+
+enum MessageType {
+  text,
+  image,
 }

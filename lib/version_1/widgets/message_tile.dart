@@ -44,7 +44,7 @@ class MessageTile extends StatelessWidget {
               // text copy to clipboard
               _getMessageAction(context);
             },
-            child: message.type == 0
+            child: message.type == MessageType.text
                 ? Container(
                     margin: isMe
                         ? const EdgeInsets.only(left: 55)
@@ -84,15 +84,18 @@ class MessageTile extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ImageScreen(
-                                      imageUrl: message.content,
-                                    )));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageScreen(
+                              imageUrl: message.content,
+                            ),
+                          ),
+                        );
                       },
                       style: ButtonStyle(
-                          padding: MaterialStateProperty.all<EdgeInsets>(
-                              const EdgeInsets.all(0))),
+                        padding: MaterialStateProperty.all<EdgeInsets>(
+                            const EdgeInsets.all(0)),
+                      ),
                       child: Material(
                         borderRadius:
                             const BorderRadius.all(Radius.circular(8)),
@@ -199,70 +202,234 @@ class MessageTile extends StatelessWidget {
   }
 
   Future<dynamic> _getMessageAction(BuildContext context) {
+    final mq = MediaQuery.of(context).size;
     return showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-        ),
-        builder: (context) {
-          return SizedBox(
-            height: 200,
-            child: Column(
-              children: [
-                message.type == 0
-                    ? ListTile(
-                        leading: const Icon(Icons.copy),
-                        title: const Text('Copy'),
-                        onTap: () {
-                          // hide bottom sheet
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        builder: (_) {
+          return ListView(
+            shrinkWrap: true,
+            children: [
+              //black divider
+              Container(
+                height: 4,
+                margin: EdgeInsets.symmetric(
+                    vertical: mq.height * .015, horizontal: mq.width * .4),
+                decoration: BoxDecoration(
+                    color: Colors.grey, borderRadius: BorderRadius.circular(8)),
+              ),
+
+              message.type == MessageType.text
+                  ?
+                  //copy option
+                  _OptionItem(
+                      icon: const Icon(Icons.copy_all_rounded,
+                          color: Colors.blue, size: 26),
+                      name: 'Copy Text',
+                      onTap: () async {
+                        await Clipboard.setData(
+                                ClipboardData(text: message.content))
+                            .then((value) {
+                          //for hiding bottom sheet
                           Navigator.pop(context);
-                          Clipboard.setData(
-                                  ClipboardData(text: message.content))
-                              .then((value) => Fluttertoast.showToast(
-                                  msg: 'Copied to Clipboard',
-                                  backgroundColor: Colors.grey.shade700,
-                                  textColor: Colors.white,
-                                  fontSize: 16,
+
+                          Fluttertoast.showToast(
+                              msg: 'Text Copied!',
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.grey[700],
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        });
+                      })
+                  :
+                  //save option
+                  _OptionItem(
+                      icon: const Icon(Icons.download_rounded,
+                          color: Colors.blue, size: 26),
+                      name: 'Save Image',
+                      onTap: () async {
+                        try {
+                          debugPrint('Image Url: ${message.content}');
+                          await GallerySaver.saveImage(message.content,
+                                  albumName: 'We Chat')
+                              .then((success) {
+                            //for hiding bottom sheet
+                            Navigator.pop(context);
+                            if (success != null && success) {
+                              Fluttertoast.showToast(
+                                  msg: 'Image Saved!',
+                                  toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
-                                  toastLength: Toast.LENGTH_SHORT));
-                        },
-                      )
-                    : ListTile(
-                        leading: const Icon(Icons.save),
-                        title: const Text('Save'),
-                        onTap: () {
-                          GallerySaver.saveImage(message.content).then(
-                              (value) => Fluttertoast.showToast(
-                                  msg: 'Saved to Gallery',
-                                  backgroundColor: Colors.grey.shade700,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.grey[700],
                                   textColor: Colors.white,
-                                  fontSize: 16,
-                                  gravity: ToastGravity.BOTTOM,
-                                  toastLength: Toast.LENGTH_SHORT));
-                        },
-                      ),
-                const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Divider(
-                    height: 1,
-                    thickness: 1,
-                  ),
+                                  fontSize: 16.0);
+                            }
+                          });
+                        } catch (e) {
+                          debugPrint('ErrorWhileSavingImg: $e');
+                        }
+                      }),
+
+              //separator or divider
+              if (isMe)
+                Divider(
+                  color: Colors.black54,
+                  endIndent: mq.width * .04,
+                  indent: mq.width * .04,
                 ),
-                if (isMe)
-                  ListTile(
-                    leading: const Icon(Icons.delete),
-                    title: const Text('Delete'),
+
+              //edit option
+              if (message.type == MessageType.text && isMe)
+                _OptionItem(
+                    icon: const Icon(Icons.edit, color: Colors.blue, size: 26),
+                    name: 'Edit Message',
                     onTap: () {
-                      // hide bottom sheet
+                      //for hiding bottom sheet
                       Navigator.pop(context);
-                      // delete message
+
+                      _showMessageUpdateDialog(context);
+                    }),
+
+              //delete option
+              if (isMe)
+                _OptionItem(
+                    icon: const Icon(Icons.delete_forever,
+                        color: Colors.red, size: 26),
+                    name: 'Delete Message',
+                    onTap: () async {
                       message.delete(chatId);
-                    },
-                  ),
-              ],
-            ),
+                      Navigator.pop(context);
+                    }),
+
+              //separator or divider
+              Divider(
+                color: Colors.black54,
+                endIndent: mq.width * .04,
+                indent: mq.width * .04,
+              ),
+
+              //sent time
+              _OptionItem(
+                  icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
+                  name: 'Sent At: ${formatTime(message.createdAt)}',
+                  onTap: () {}),
+
+              //read time
+              _OptionItem(
+                  icon: const Icon(Icons.remove_red_eye, color: Colors.green),
+                  name: message.readAt == null
+                      ? 'Read At: Not seen yet'
+                      : 'Read At: ${formatTime(message.readAt!)}',
+                  onTap: () {}),
+            ],
           );
         });
+  }
+
+  //dialog for updating message content
+  void _showMessageUpdateDialog(BuildContext context) {
+    String updatedMsg = message.content;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        contentPadding:
+            const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 10),
+
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+
+        //title
+        title: Row(
+          children: const [
+            Icon(
+              Icons.message,
+              color: Colors.blue,
+              size: 28,
+            ),
+            Text(' Update Message')
+          ],
+        ),
+
+        //content
+        content: TextFormField(
+          initialValue: updatedMsg,
+          maxLines: null,
+          onChanged: (value) => updatedMsg = value,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+          ),
+        ),
+
+        //actions
+        actions: [
+          //cancel button
+          MaterialButton(
+            onPressed: () {
+              //hide alert dialog
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.blue, fontSize: 16),
+            ),
+          ),
+
+          //update button
+          MaterialButton(
+            onPressed: () {
+              //hide alert dialog
+              Navigator.pop(context);
+              message.update(updatedMsg, chatId);
+            },
+            child: const Text(
+              'Update',
+              style: TextStyle(color: Colors.blue, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//custom options card (for copy, edit, delete, etc.)
+class _OptionItem extends StatelessWidget {
+  final Icon icon;
+  final String name;
+  final VoidCallback onTap;
+
+  const _OptionItem(
+      {required this.icon, required this.name, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context).size;
+    return InkWell(
+      onTap: () => onTap(),
+      child: Padding(
+        padding: EdgeInsets.only(
+            left: mq.width * .05,
+            top: mq.height * .015,
+            bottom: mq.height * .015),
+        child: Row(
+          children: [
+            icon,
+            Flexible(
+              child: Text(
+                '    $name',
+                style: const TextStyle(
+                    fontSize: 15, color: Colors.black54, letterSpacing: 0.5),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
 

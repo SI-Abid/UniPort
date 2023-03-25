@@ -240,24 +240,31 @@ class User extends ChangeNotifier {
   }
 
   Future<void> sendPushNotification(User toUser, Message message) async {
-    String userPushToken = await FirebaseFirestore.instance
+    String userToken = await FirebaseFirestore.instance
         .collection('users')
         .doc(toUser.uid)
         .get()
-        .then((value) => value.data()!['pushToken']);
+        .then((value) => value.data()?['pushToken']);
     final body = {
-      'to': userPushToken,
-      'notification': {
-        'title': loggedInUser.name,
-        'body': message.type == 0 ? message.content : 'Image',
-        'image': loggedInUser.photoUrl,
-        'sound': 'default',
-        'android_channel_id': 'chat',
-      },
-      'data': {
-        'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-        'type': 'chat',
-        'sender': loggedInUser.uid,
+      'to': userToken,
+      'android': {
+        'priority': 'high',
+        'notification': {
+          'title': name,
+          'body': message.type == MessageType.text
+              ? message.content
+              : 'Image',
+          'sound': 'default',
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+          'icon': photoUrl,
+          'channel_id': 'chat',
+          'tag': uid,
+        },
+        'data': {
+          'type': 'chat',
+          'sender': uid,
+        },
+        'collapse_key': 'com.uniport.chat',
       },
     };
     final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
