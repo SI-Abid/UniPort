@@ -247,24 +247,13 @@ class User extends ChangeNotifier {
         .then((value) => value.data()?['pushToken']);
     final body = {
       'to': userToken,
-      'android': {
-        'priority': 'high',
-        'notification': {
-          'title': name,
-          'body': message.type == MessageType.text
-              ? message.content
-              : 'Image',
-          'sound': 'default',
-          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-          'icon': photoUrl,
-          'channel_id': 'chat',
-          'tag': uid,
-        },
-        'data': {
-          'type': 'chat',
-          'sender': uid,
-        },
-        'collapse_key': 'com.uniport.chat',
+      'notification': {
+        'title': name,
+        'body': message.type == MessageType.text ? message.content : 'Image',
+      },
+      'data': {
+        'type': 'chat',
+        'sender': uid,
       },
     };
     final url = Uri.parse('https://fcm.googleapis.com/fcm/send');

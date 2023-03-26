@@ -16,11 +16,15 @@ class MessageTile extends StatelessWidget {
       required this.message,
       required this.isMe,
       required this.chatId,
-      this.nextMsg});
+      this.nextMsg,
+      required this.isLast,
+      this.prevMsg});
   final Message message;
   final bool isMe;
   final String chatId;
   final Message? nextMsg;
+  final Message? prevMsg;
+  final bool isLast;
   @override
   Widget build(BuildContext context) {
     if (!isMe && message.readAt == null) {
@@ -214,11 +218,12 @@ class MessageTile extends StatelessWidget {
             children: [
               //black divider
               Container(
-                height: 4,
+                height: 3,
                 margin: EdgeInsets.symmetric(
                     vertical: mq.height * .015, horizontal: mq.width * .4),
                 decoration: BoxDecoration(
-                    color: Colors.grey, borderRadius: BorderRadius.circular(8)),
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(8)),
               ),
 
               message.type == MessageType.text
@@ -286,12 +291,12 @@ class MessageTile extends StatelessWidget {
               //edit option
               if (message.type == MessageType.text && isMe)
                 _OptionItem(
-                    icon: const Icon(Icons.edit, color: Colors.blue, size: 26),
+                    icon:
+                        const Icon(Icons.edit, color: Colors.blue, size: 26),
                     name: 'Edit Message',
                     onTap: () {
                       //for hiding bottom sheet
                       Navigator.pop(context);
-
                       _showMessageUpdateDialog(context);
                     }),
 
@@ -302,7 +307,7 @@ class MessageTile extends StatelessWidget {
                         color: Colors.red, size: 26),
                     name: 'Delete Message',
                     onTap: () async {
-                      message.delete(chatId);
+                      message.delete(chatId, isLast, prevMsg);
                       Navigator.pop(context);
                     }),
 
@@ -384,7 +389,7 @@ class MessageTile extends StatelessWidget {
             onPressed: () {
               //hide alert dialog
               Navigator.pop(context);
-              message.update(updatedMsg, chatId);
+              message.update(updatedMsg, chatId, isLast);
             },
             child: const Text(
               'Update',

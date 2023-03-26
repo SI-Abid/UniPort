@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:uniport/version_1/services/notification_service.dart';
 
 import '../models/models.dart';
 import '../services/providers.dart';
@@ -19,7 +20,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    setupInteractedMessage();
+
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        print('HomeScreen: $message');
+      }
+    });
+
+    FirebaseMessaging.onMessage.listen((message) {
+      print('App in foreground: $message');
+      if (message.notification != null) {
+        print('Notification: ${message.notification!.title}');
+        LocalNotification.createNotification(message);
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('App in background: $message');
+      if (message.notification != null) {
+        String userId = message.data['senderId']!;
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get()
+            .then((value) {
+          User user = User.fromJson(value.data()!);
+          Navigator.of(context).pushNamed('/message', arguments: user);
+        });
+      }
+    });
+
     WidgetsBinding.instance.addObserver(this);
     if (loggedInUser.pushToken == null) {
       loggedInUser.updatePushToken();
@@ -33,44 +63,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Future<void> setupInteractedMessage() async {
-    // Get any messages which caused the application to open from
-    // a terminated state.
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    // If the message also contains a data property with a "type" of "chat",
-    // navigate to a chat screen
-    if (initialMessage != null) {
-      _handleMessage(initialMessage);
-    }
-
-    // Also handle any interaction when the app is in the background via a
-    // Stream listener
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-  }
-
-  void _handleMessage(RemoteMessage message) {
-    if (message.data['type'] == 'chat') {
-      final senderId = message.data['sender'];
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(senderId)
-          .get()
-          .then((value) {
-        final sender = User.fromJson(value.data()!);
-        Navigator.of(context).pushReplacementNamed('/message', arguments: sender);
-      });
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if(state==AppLifecycleState.resumed){
+    if (state == AppLifecycleState.resumed) {
       loggedInUser.updateOnlineStatus(true);
       loggedInUser.updatePushToken();
-    }else{
+    } else {
       loggedInUser.updateOnlineStatus(false);
     }
     debugPrint('HomeScreen: $state');

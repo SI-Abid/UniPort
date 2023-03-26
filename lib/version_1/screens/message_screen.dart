@@ -251,7 +251,7 @@ class _MessageScreenState extends State<MessageScreen> {
                                   e.data() as Map<String, dynamic>))
                               .toList();
                           return ListView.builder(
-                            reverse: true,
+                            reverse: true, // * MESSAGE LIST IS REVERSED
                             controller: _scrollController,
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
@@ -259,11 +259,16 @@ class _MessageScreenState extends State<MessageScreen> {
                               final isMe = message.sender == loggedInUser.uid;
                               Message? nextMssg =
                                   index != 0 ? messageList[index - 1] : null;
+                              Message? prevMssg = index != messages.length - 1
+                                  ? messageList[index + 1]
+                                  : null;
                               return MessageTile(
                                 chatId: chatId,
                                 message: message,
                                 isMe: isMe,
                                 nextMsg: nextMssg,
+                                prevMsg: prevMssg,
+                                isLast: index == 0,
                               );
                             },
                           );

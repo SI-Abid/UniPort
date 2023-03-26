@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:encrypt/encrypt.dart';
 
@@ -63,22 +61,34 @@ class Message {
     ref.update({'lastMessage.readAt': readTime});
   }
 
-  void delete(String chatId) {
+  void delete(String chatId, bool isLast, Message? previousMessage) {
     FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .doc(createdAt.toString())
         .delete();
+    if (isLast) {
+      FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId)
+          .update({'lastMessage': previousMessage!.toJson()});
+    }
   }
 
-  void update(String newMsg, String chatId) {
+  void update(String newMsg, String chatId, bool lastMessage) {
     FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .doc(createdAt.toString())
         .update({'content': encrypt(newMsg)});
+    if (lastMessage) {
+      FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId)
+          .update({'lastMessage.content': encrypt(newMsg)});
+    }
   }
 }
 

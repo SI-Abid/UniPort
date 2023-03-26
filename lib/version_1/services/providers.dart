@@ -9,7 +9,6 @@ final remoteServerConfiguration = {
   "serverKey": "68Cfak"
 };
 
-
 String otpHolder = '';
 
 late User loggedInUser;

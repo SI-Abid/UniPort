@@ -4,11 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_notification_channel/flutter_notification_channel.dart';
 import 'package:flutter_notification_channel/notification_importance.dart';
 import 'package:flutter_notification_channel/notification_visibility.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uniport/version_1/services/notification_service.dart';
 
 import '../../firebase_options.dart';
 import '../models/chat.dart';
@@ -19,18 +21,9 @@ Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.instance.setAutoInitEnabled(true);
-  await FlutterNotificationChannel.registerNotificationChannel(
-    id: 'chat',
-    name: 'Chat',
-    description: 'Chat notifications',
-    importance: NotificationImportance.IMPORTANCE_HIGH,
-  );
-
   FirebaseMessaging.instance.requestPermission();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  FirebaseMessaging.onMessage.listen((event) {
-    print('Got message in Foreground: ${event.data}');
-  });
+  LocalNotification.initialize();
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
   // await DefaultCacheManager().emptyCache();
@@ -43,8 +36,7 @@ Future<void> initiate() async {
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // message contains a map with the message data. Also contains a collapseKey
-  // if the message was sent with collapseKey:
+  print('Got message in Background: ${message.data}');
 }
 
 String getChatId(String uid1, String uid2) {

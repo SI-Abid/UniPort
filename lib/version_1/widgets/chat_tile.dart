@@ -16,7 +16,7 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isMe = lastMsg.sender == loggedInUser.uid;
-    print('${lastMsg.sender} ${loggedInUser.uid}}');
+    // print('${lastMsg.sender} ${loggedInUser.uid}');
     bool isUnread = lastMsg.readAt == null && !isMe;
     return Container(
       decoration: BoxDecoration(
