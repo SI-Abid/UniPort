@@ -78,7 +78,7 @@ class Message {
         .doc(chatId)
         .collection('messages')
         .doc(createdAt.toString())
-        .update({'content': newMsg});
+        .update({'content': encrypt(newMsg)});
   }
 }
 
