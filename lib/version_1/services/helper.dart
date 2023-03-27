@@ -1,25 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_auth/email_auth.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_notification_channel/flutter_notification_channel.dart';
-import 'package:flutter_notification_channel/notification_importance.dart';
-import 'package:flutter_notification_channel/notification_visibility.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
 import '../../firebase_options.dart';
-import '../models/chat.dart';
 import '../models/user.dart';
 import 'providers.dart';
 
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await dotenv.load(fileName: '.env');
   FirebaseMessaging.instance.setAutoInitEnabled(true);
   FirebaseMessaging.instance.requestPermission();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

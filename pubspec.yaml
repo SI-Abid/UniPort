@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_chat_ui: ^1.6.6
+  flutter_dotenv: ^5.0.2
   flutter_local_notifications: ^13.0.0
   flutter_notification_channel: ^2.0.0
   flutter_svg: ^1.1.6
@@ -67,6 +68,8 @@ flutter:
   assets:
     - assets/icon/
     - assets/images/
+
+    - .env
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/models/models.dart';
 
 import '../services/providers.dart';
 import '../widgets/widgets.dart';
@@ -55,6 +56,8 @@ class _AssignedBatchScreenState extends State<AssignedBatchScreen> {
                     child: ListView.builder(
                       itemCount: groupsList.length,
                       itemBuilder: (context, index) {
+                        final lastMsg =
+                            Message.fromJson(groupsList[index]['lastMessage']);
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -110,7 +113,7 @@ class _AssignedBatchScreenState extends State<AssignedBatchScreen> {
                                 ),
                               ),
                               subtitle: Text(
-                                '${groupsList[index]['lastMessage']['content']}',
+                                '${lastMsg.sender == loggedInUser.uid ? 'You: ' : groupsList[index]['lastMessageFrom'] + ': '}${lastMsg.content}',
                                 softWrap: true,
                                 maxLines: 1,
                                 style: GoogleFonts.sen(

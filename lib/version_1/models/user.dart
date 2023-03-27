@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 
 import '../services/helper.dart';
@@ -229,13 +230,22 @@ class User extends ChangeNotifier {
     final msgRef =
         docRef.collection('messages').doc(message.createdAt.toString());
     FirebaseFirestore.instance.runTransaction((transaction) async {
-      transaction.set(
-          docRef,
-          {
-            'members': FieldValue.arrayUnion([uid]),
-          },
-          SetOptions(merge: true));
-      transaction.set(msgRef, message.toJson());
+      transaction
+          .set(
+              docRef,
+              {
+                'members': FieldValue.arrayUnion([uid]),
+              },
+              SetOptions(merge: true))
+          .set(msgRef, message.toJson())
+          .update(docRef, {
+        'lastMessage': message.toJson(),
+      }).set(
+              docRef,
+              {
+                'lastMessageFrom': name,
+              },
+              SetOptions(merge: true));
     });
   }
 
@@ -247,6 +257,15 @@ class User extends ChangeNotifier {
         .then((value) => value.data()?['pushToken']);
     final body = {
       'to': userToken,
+      'priority': 'high',
+      'sound': 'default',
+      'badge': '1',
+      'content_available': true,
+      'mutable_content': true,
+      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+      'channelId': 'chat',
+      'channelName': 'Chat',
+      'channelDescription': 'Chat Notifications',
       'notification': {
         'title': name,
         'body': message.type == MessageType.text ? message.content : 'Image',
@@ -257,12 +276,12 @@ class User extends ChangeNotifier {
       },
     };
     final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+    // print(dotenv.env['PUSH_KEY']!);
     final response = await post(
       url,
       headers: {
         HttpHeaders.contentTypeHeader: 'application/json',
-        HttpHeaders.authorizationHeader:
-            'key=AAAAaOpaTeI:APA91bF5wE5xHyyIva5D8q6OFIkj3qgJFmK6jfbR5CF94XGQhdmYYlpH0nIPpLoLsPiXXxnwb6oXUd8agh4FbelL0WgoV0ym1kZEAkfPRvYWFTVaxfiUNIiiO-Uewbb8BjXQMHP5eqWT',
+        HttpHeaders.authorizationHeader: dotenv.env['PUSH_KEY']!,
       },
       body: jsonEncode(body),
     );
