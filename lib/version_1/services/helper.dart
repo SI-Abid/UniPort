@@ -16,23 +16,18 @@ Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await dotenv.load(fileName: '.env');
-  FirebaseMessaging.instance.setAutoInitEnabled(true);
-  FirebaseMessaging.instance.requestPermission();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  LocalNotification.initialize();
+
+  await LocalNotification.initialize();
+  
   emailAuth = EmailAuth(sessionName: 'UniPort');
   await emailAuth.config(remoteServerConfiguration);
-  // await DefaultCacheManager().emptyCache();
+
   prefs = await SharedPreferences.getInstance();
   google = GoogleSignIn(scopes: <String>[
     'email',
   ]);
   loggedInUser = User();
   await loggedInUser.load();
-}
-
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Got message in Background: ${message.data}');
 }
 
 String getChatId(String uid1, String uid2) {
@@ -49,15 +44,6 @@ Future<List<User>> userList() => FirebaseFirestore.instance
     .where('uid', isNotEqualTo: loggedInUser.uid)
     .get()
     .then((value) => value.docs.map((e) => User.fromJson(e.data())).toList());
-
-// Stream<List<Chat>> chatStream() => FirebaseFirestore.instance
-//     .collection('chats')
-//     .where(
-//       'users',
-//       arrayContains: loggedInUser.toJson(),
-//     )
-//     .snapshots()
-//     .map((event) => event.docs.map((e) => Chat.fromJson(e.data())).toList());
 
 String formatTime(int miliseconds) {
   final time = DateTime.fromMillisecondsSinceEpoch(miliseconds);

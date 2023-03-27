@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
+import 'package:uniport/version_1/services/notification_service.dart';
 
 import '../services/helper.dart';
 import '../services/providers.dart';
@@ -33,6 +33,8 @@ class User extends ChangeNotifier {
   String? studentId;
   String? section;
   String? batch;
+  // app data
+  String? openedChatId;
   User({
     this.uid = '',
     this.usertype = 'student',
@@ -257,15 +259,6 @@ class User extends ChangeNotifier {
         .then((value) => value.data()?['pushToken']);
     final body = {
       'to': userToken,
-      'priority': 'high',
-      'sound': 'default',
-      'badge': '1',
-      'content_available': true,
-      'mutable_content': true,
-      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-      'channelId': 'chat',
-      'channelName': 'Chat',
-      'channelDescription': 'Chat Notifications',
       'notification': {
         'title': name,
         'body': message.type == MessageType.text ? message.content : 'Image',
@@ -285,7 +278,9 @@ class User extends ChangeNotifier {
       },
       body: jsonEncode(body),
     );
-    print('Push: ${response.body}');
+    if (kDebugMode) {
+      print('Push response: ${response.body}');
+    }
   }
 
   Future<bool> loginWithEmail(String email, String password) async {
@@ -382,11 +377,11 @@ class User extends ChangeNotifier {
     });
   }
 
-  Future<void> updatePushToken() async {
+  Future<void> updatePushToken([String? token]) async {
     if (uid.isEmpty) {
       return;
     }
-    pushToken = await FirebaseMessaging.instance.getToken();
+    pushToken = token ?? await LocalNotification.getToken();
     FirebaseFirestore.instance.collection('users').doc(uid).update({
       'pushToken': pushToken,
     });

@@ -30,6 +30,11 @@ class MessageTile extends StatelessWidget {
     if (!isMe && message.readAt == null) {
       message.markAsRead(chatId);
     }
+    bool isLeading = message.sender != prevMsg?.sender ||
+        formatTime(message.createdAt) != formatTime(prevMsg?.createdAt ?? 0);
+    //  &&
+    //     message.sender == (nextMsg?.sender ?? message.sender);
+    // bool isSingle =  && nextMsg==null;
     return Container(
       padding: EdgeInsets.only(
         top: 2,
@@ -59,13 +64,13 @@ class MessageTile extends StatelessWidget {
                       borderRadius: isMe
                           ? const BorderRadius.only(
                               topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
                               bottomLeft: Radius.circular(16),
-                            )
-                          : const BorderRadius.only(
-                              topLeft: Radius.circular(16),
                               topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
+                            )
+                          : BorderRadius.only(
+                              topLeft: Radius.circular(isLeading ? 16 : 0),
+                              topRight: const Radius.circular(16),
+                              bottomRight: const Radius.circular(16),
                             ),
                       color: isMe
                           ? Colors.teal.shade800
@@ -187,11 +192,8 @@ class MessageTile extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           color: Colors.black87),
                     )
-                  : DateTime.fromMillisecondsSinceEpoch(message.createdAt)
-                              .minute !=
-                          DateTime.fromMillisecondsSinceEpoch(
-                                  nextMsg!.createdAt)
-                              .minute
+                  : formatTime(message.createdAt) !=
+                          formatTime(nextMsg!.createdAt)
                       ? Text(
                           formatTime(message.createdAt),
                           style: GoogleFonts.sen(
@@ -222,8 +224,7 @@ class MessageTile extends StatelessWidget {
                 margin: EdgeInsets.symmetric(
                     vertical: mq.height * .015, horizontal: mq.width * .4),
                 decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(8)),
+                    color: Colors.grey, borderRadius: BorderRadius.circular(8)),
               ),
 
               message.type == MessageType.text
@@ -260,7 +261,7 @@ class MessageTile extends StatelessWidget {
                         try {
                           debugPrint('Image Url: ${message.content}');
                           await GallerySaver.saveImage(message.content,
-                                  albumName: 'We Chat')
+                                  albumName: 'UniPort')
                               .then((success) {
                             //for hiding bottom sheet
                             Navigator.pop(context);
@@ -291,8 +292,7 @@ class MessageTile extends StatelessWidget {
               //edit option
               if (message.type == MessageType.text && isMe)
                 _OptionItem(
-                    icon:
-                        const Icon(Icons.edit, color: Colors.blue, size: 26),
+                    icon: const Icon(Icons.edit, color: Colors.blue, size: 26),
                     name: 'Edit Message',
                     onTap: () {
                       //for hiding bottom sheet
@@ -321,7 +321,7 @@ class MessageTile extends StatelessWidget {
               //sent time
               _OptionItem(
                   icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
-                  name: 'Sent At: ${formatTime(message.createdAt)}',
+                  name: 'Sent At: ${details(message.createdAt)}',
                   onTap: () {}),
 
               //read time
@@ -329,11 +329,37 @@ class MessageTile extends StatelessWidget {
                   icon: const Icon(Icons.remove_red_eye, color: Colors.green),
                   name: message.readAt == null
                       ? 'Read At: Not seen yet'
-                      : 'Read At: ${formatTime(message.readAt!)}',
+                      : 'Read At: ${details(message.readAt!)}',
                   onTap: () {}),
             ],
           );
         });
+  }
+
+  String details(int milisec) {
+    final time = DateTime.fromMillisecondsSinceEpoch(milisec);
+    int hour = time.hour;
+    int minute = time.minute;
+    String ampm = 'AM';
+    if (hour > 12) {
+      hour -= 12;
+      ampm = 'PM';
+    }
+    hour = hour == 0 ? 12 : hour;
+    String result;
+    result = '$hour:${minute.toString().padLeft(2, '0')} $ampm';
+    // if today
+    if (time.day == DateTime.now().day) {
+      return result;
+    }
+    // if yesterday
+    if (time.day == DateTime.now().day - 1) {
+      result = 'Yesterday  $result';
+    } else {
+      result =
+          '${time.day.toString().padLeft(2, '0')}/${time.month.toString().padLeft(2, '0')}/${time.year}   $result';
+    }
+    return result;
   }
 
   //dialog for updating message content

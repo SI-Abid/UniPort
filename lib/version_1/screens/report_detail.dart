@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -18,7 +19,9 @@ class ReportDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(reportId);
+    if (kDebugMode) {
+      print(reportId);
+    }
     return Scaffold(
       appBar: AppBar(
         title: const AppTitle(title: 'Report'),

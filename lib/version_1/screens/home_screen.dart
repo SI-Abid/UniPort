@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
@@ -21,34 +20,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
-    FirebaseMessaging.instance.getInitialMessage().then((message) {
-      if (message != null) {
-        print('HomeScreen: $message');
-      }
-    });
+    // * LISTEN FOR USER TOKEN REFRESH
+    LocalNotification.listenForTokenRefresh();
 
-    FirebaseMessaging.onMessage.listen((message) {
-      print('App in foreground: $message');
-      if (message.notification != null) {
-        print('Notification: ${message.notification!.title}');
-        LocalNotification.createNotification(message);
-      }
-    });
+    // // * LISTEN FOR NOTIFICATION
+    // FirebaseMessaging.instance.getInitialMessage().then((message) {
+    //   if (message != null) {
+    //     print('HomeScreen: $message');
+    //   }
+    // });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print('App in background: $message');
-      if (message.notification != null) {
-        String userId = message.data['senderId']!;
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .get()
-            .then((value) {
-          User user = User.fromJson(value.data()!);
-          Navigator.of(context).pushNamed('/message', arguments: user);
-        });
-      }
-    });
+    // // * LISTEN FOR NOTIFICATION WHEN APP IS IN FOREGROUND
+    // FirebaseMessaging.onMessage.listen((message) {
+    //   print('App in foreground: $message');
+    //   if (message.notification != null) {
+    //     print('Notification: ${message.notification!.title}');
+    //     LocalNotification.showNotification(message);
+    //   }
+    // });
+
+    // // * LISTEN FOR NOTIFICATION WHEN APP IS IN BACKGROUND
+    // FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    //   print('App in background: $message');
+    //   if (message.notification != null) {
+    //     String userId = message.data['senderId']!;
+    //     FirebaseFirestore.instance
+    //         .collection('users')
+    //         .doc(userId)
+    //         .get()
+    //         .then((value) {
+    //       User user = User.fromJson(value.data()!);
+    //       Navigator.of(context).pushNamed('/message', arguments: user);
+    //     });
+    //   }
+    // });
 
     WidgetsBinding.instance.addObserver(this);
     if (loggedInUser.pushToken == null) {

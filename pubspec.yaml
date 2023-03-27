@@ -9,6 +9,7 @@ environment:
   sdk: ">=2.19.2 <3.0.0"
 
 dependencies:
+  app_settings: ^4.2.0
   cached_network_image: ^3.2.3
   cloud_firestore: ^4.1.0
   connectivity_plus: ^3.0.3

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -38,6 +39,7 @@ class _MessageScreenState extends State<MessageScreen> {
   void initState() {
     super.initState();
     messageSender = widget.messageSender;
+    loggedInUser.openedChatId = messageSender.uid;
     chatId = getChatId(loggedInUser.uid, messageSender.uid);
     messages = [];
     _scrollController.addListener(_scrollListener);
@@ -59,6 +61,7 @@ class _MessageScreenState extends State<MessageScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    loggedInUser.openedChatId = null;
     super.dispose();
   }
 
@@ -179,23 +182,38 @@ class _MessageScreenState extends State<MessageScreen> {
                     profileViewed = true;
                   });
                 } else if (value == 2) {
+                  if (kDebugMode) {
+                    print('storage path: images/$chatId');
+                  }
                   FirebaseFirestore.instance
                       .collection('chats')
                       .doc(chatId)
-                      .delete();
-                  print('storage path: images/$chatId');
-                  FirebaseStorage.instance
-                      .ref()
-                      .child('images/$chatId')
-                      .list()
-                      .then((value) => value.items.forEach((element) {
-                            print(element.name);
-                            // element.delete();
-                          }));
+                      .collection('messages')
+                      .get()
+                      .then((value) => value.docs.forEach((element) {
+                            element.reference.delete();
+                          }))
+                      .then((value) => FirebaseFirestore.instance
+                          .collection('chats')
+                          .doc(chatId)
+                          .delete())
+                      .then((value) => FirebaseStorage.instance
+                          .ref()
+                          .child('images/$chatId')
+                          .delete())
+                      .then((value) => Navigator.pop(context));
                   // FirebaseStorage.instance
                   //     .ref()
                   //     .child('images/$chatId')
-                  //     .delete();
+                  //     .list()
+                  //     .then((value) {
+                  //   for (var element in value.items) {
+                  //     if (kDebugMode) {
+                  //       print(element.name);
+                  //     }
+                  //     // element.delete();
+                  //   }
+                  // });
                 }
               },
             ),

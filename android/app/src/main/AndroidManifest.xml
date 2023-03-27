@@ -23,7 +23,7 @@
                 android:resource="@style/NormalTheme"
             />
             <meta-data
-                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:name="com.google.firebase.messaging.default_notification_channel_id"
                 android:value="pushnotification" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
