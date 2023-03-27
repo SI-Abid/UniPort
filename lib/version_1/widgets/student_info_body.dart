@@ -190,7 +190,7 @@ class _StudentInfoBodyState extends State<StudentInfoBody> {
             .toList(),
         onChanged: (value) => setState(() {
           loggedInUser.designation = value.toString();
-          formKey.currentState!.validate();
+          // formKey.currentState!.validate();
         }),
       ),
     );

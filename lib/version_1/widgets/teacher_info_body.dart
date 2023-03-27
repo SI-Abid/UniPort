@@ -180,7 +180,7 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
             .toList(),
         onChanged: (value) => setState(() {
           loggedInUser.designation = value.toString();
-          formKey.currentState!.validate();
+          // formKey.currentState!.validate();
         }),
       ),
     );
@@ -272,9 +272,8 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                 ))
             .toList(),
         onChanged: (value) => setState(() {
-          // print(value.toString());
           loggedInUser.department = value.toString();
-          formKey.currentState!.validate();
+          // formKey.currentState!.validate();
         }),
       ),
     );
