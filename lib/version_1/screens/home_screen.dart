@@ -1,11 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:uniport/version_1/providers/providers.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
-import '../models/models.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.debug = false});
@@ -16,55 +17,93 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  late final ChatProvider chatProvider;
+  late final AuthProvider authProvider;
+
   @override
   void initState() {
     super.initState();
-
+    chatProvider = context.read<ChatProvider>();
+    authProvider = context.read<AuthProvider>();
     // * LISTEN FOR USER TOKEN REFRESH
     LocalNotification.listenForTokenRefresh();
 
-    // // * LISTEN FOR NOTIFICATION
-    // FirebaseMessaging.instance.getInitialMessage().then((message) {
-    //   if (message != null) {
-    //     print('HomeScreen: $message');
-    //   }
-    // });
-
-    // // * LISTEN FOR NOTIFICATION WHEN APP IS IN FOREGROUND
-    // FirebaseMessaging.onMessage.listen((message) {
-    //   print('App in foreground: $message');
-    //   if (message.notification != null) {
-    //     print('Notification: ${message.notification!.title}');
-    //     LocalNotification.showNotification(message);
-    //   }
-    // });
-
-    // // * LISTEN FOR NOTIFICATION WHEN APP IS IN BACKGROUND
-    // FirebaseMessaging.onMessageOpenedApp.listen((message) {
-    //   print('App in background: $message');
-    //   if (message.notification != null) {
-    //     String userId = message.data['senderId']!;
-    //     FirebaseFirestore.instance
-    //         .collection('users')
-    //         .doc(userId)
-    //         .get()
-    //         .then((value) {
-    //       User user = User.fromJson(value.data()!);
-    //       Navigator.of(context).pushNamed('/message', arguments: user);
-    //     });
-    //   }
-    // });
-
+    // * LISTEN FOR NOTIFICATION TAP
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      LocalNotification.handleMessageTap(context, message);
+    });
     WidgetsBinding.instance.addObserver(this);
-    if (loggedInUser.pushToken == null) {
-      loggedInUser.updatePushToken();
-    }
+  }
+
+  void registerNotification() {
+    firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: true,
+      badge: true,
+      carPlay: true,
+      criticalAlert: true,
+      provisional: true,
+      sound: true,
+    );
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('onMessage: $message');
+      if (message.notification != null) {
+        showNotification(message);
+      }
+      return;
+    });
+
+    firebaseMessaging.getToken().then((token) {
+      print('push token: $token');
+      if (token != null && token != chatProvider.user.pushToken) {
+        chatProvider.updatePushToken(token);
+      }
+    }).catchError((err) {
+      Fluttertoast.showToast(msg: err.message.toString());
+    });
+  }
+
+  void configLocalNotification() {
+    AndroidInitializationSettings initializationSettingsAndroid =
+        const AndroidInitializationSettings('app_icon');
+    InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void showNotification(RemoteMessage message) async {
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        const AndroidNotificationDetails(
+      'com.example.uniport',
+      'Uniport',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    print(message.notification);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      message.notification!.title,
+      message.notification!.body,
+      platformChannelSpecifics,
+      payload: message.data['chatId'],
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    loggedInUser.updateOnlineStatus(false);
+    chatProvider.updateOnlineStatus(false);
     super.dispose();
   }
 
@@ -72,10 +111,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      loggedInUser.updateOnlineStatus(true);
-      loggedInUser.updatePushToken();
+      chatProvider.updateOnlineStatus(true);
     } else {
-      loggedInUser.updateOnlineStatus(false);
+      chatProvider.updateOnlineStatus(false);
     }
     debugPrint('HomeScreen: $state');
   }
@@ -93,11 +131,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamed('/loading');
-              loggedInUser.signOut().then((value) {
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/login', (route) => false);
-              });
+              authProvider.handleSignOut();
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/login', (Route<dynamic> route) => false);
             },
             child: Card(
               elevation: 2,
@@ -124,95 +160,65 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             runSpacing: 10,
             spacing: 10,
             children: [
-              // NOTE: for all users
+              // *NOTE: for all users
               const CustomCard(
                   iconPath: 'assets/icon/chat_any.svg',
                   title: 'CHAT',
                   subtitle: 'ONE-ONE',
                   actionName: 'MESSAGE',
                   routeName: '/chat'),
-              // NOTE: for students
-              if (loggedInUser.usertype == 'student' || widget.debug)
+              // *NOTE: for students
+              if (chatProvider.user.usertype == 'student' || widget.debug) ...[
                 const CustomCard(
                     iconPath: 'assets/icon/anonymous.svg',
                     title: 'CHAT',
                     subtitle: 'ANONYMOUS',
                     actionName: 'REPORT',
                     routeName: '/studentReport'),
-              if (loggedInUser.usertype == 'student' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/group_chat.svg',
                     title: 'GROUP CHAT',
                     subtitle: 'ADVISOR & COURSES',
                     actionName: 'MESSAGE',
                     routeName: '/groupChat'),
-              // NOTE: for teachers
-              if (loggedInUser.usertype == 'teacher' || widget.debug)
+              ],
+              // *NOTE: for teachers
+              if (chatProvider.user.usertype == 'teacher' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/assigned_batch.svg',
                     title: 'ASSIGNED BATCH',
                     subtitle: 'GROUP CHAT',
                     actionName: 'MESSAGE',
                     routeName: '/assignedBatch'),
-              if (loggedInUser.usertype == 'teacher' || widget.debug)
+              if (chatProvider.user.usertype == 'teacher' || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/student.svg',
                     title: 'STUDENTS',
                     subtitle: 'PENDING',
                     actionName: 'APPROVE',
                     routeName: '/studentApproval'),
-              // NOTE: for HODs
-              if (loggedInUser.isHod == true || widget.debug)
+              // * NOTE: for HODs
+              if (chatProvider.user.isHod == true || widget.debug) ...[
                 const CustomCard(
                     iconPath: 'assets/icon/teacher.svg',
                     title: 'TEACHERS',
                     subtitle: 'PENDING',
                     actionName: 'APPROVE',
                     routeName: '/teacherApproval'),
-              if (loggedInUser.isHod == true || widget.debug)
-                CustomCard(
+                const CustomCard(
                   iconPath: 'assets/icon/batch_advisor.svg',
                   title: 'ADVISOR',
                   subtitle: 'BATCH',
                   actionName: 'ASSIGN',
                   routeName: '/assignAdvisor',
-                  action: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return FutureBuilder(
-                              future: FirebaseFirestore.instance
-                                  .collection('users')
-                                  .where('usertype', isEqualTo: 'teacher')
-                                  .where('approved', isEqualTo: true)
-                                  .get(),
-                              builder: (context,
-                                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                                if (snapshot.hasData) {
-                                  final List<User> teacherList = [];
-                                  for (final doc in snapshot.data!.docs) {
-                                    teacherList.add(User.fromJson(
-                                        doc.data() as Map<String, dynamic>));
-                                  }
-                                  // print(teacherList);
-                                  return AssignAdvisor(
-                                      teacherList: teacherList);
-                                }
-                                return const LoadingScreen();
-                              });
-                        },
-                      ),
-                    );
-                  },
                 ),
-              if (loggedInUser.isHod == true || widget.debug)
                 const CustomCard(
                     iconPath: 'assets/icon/anonymous.svg',
                     title: 'REPORTS',
                     subtitle: 'ANONYMOUS',
                     actionName: 'VIEW',
                     routeName: '/reportView'),
+              ]
             ],
           ),
         ),
