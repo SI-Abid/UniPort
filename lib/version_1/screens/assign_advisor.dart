@@ -8,8 +8,7 @@ import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
 class AssignAdvisor extends StatefulWidget {
-  const AssignAdvisor({super.key, required this.teacherList});
-  final List<User> teacherList;
+  const AssignAdvisor({super.key});
   @override
   State<AssignAdvisor> createState() => _AssignAdvisorState();
 }
@@ -18,36 +17,43 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
   late List<Map<String, dynamic>> batchInfoList;
   bool isLoading = true;
   List<String> selectedSection = [];
+  List<UserModel> teacherList = [];
   String? selectedBatch;
   int selectedBatchIndex = 0;
-  User? selectedTeacher;
+  UserModel? selectedTeacher;
   @override
   void initState() {
     super.initState();
     FirebaseFirestore.instance.collection('batchInfo').get().then((value) {
       batchInfoList = value.docs.map((e) => e.data()).toList();
-      // print(batchInfoList);
       batchInfoList.sort((a, b) => a['batch'].compareTo(b['batch']));
-      setState(() {
-        isLoading = false;
-      });
-    });
+    }).then((value) => FirebaseFirestore.instance
+            .collection('users')
+            .where('userType', isEqualTo: 'teacher')
+            .where('approved', isEqualTo: true)
+            .get()
+            .then((value) {
+          teacherList =
+              value.docs.map((e) => UserModel.fromJson(e.data())).toList();
+          // print(teacherList);
+          setState(() {});
+        }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const LoadingScreen()
-        : Scaffold(
-            appBar: AppBar(
-              leadingWidth: 24,
-              iconTheme: IconThemeData(color: Colors.teal.shade800),
-              title: const AppTitle(title: 'Advisor Assign'),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
-            backgroundColor: const Color(0xfff5f5f5),
-            body: Center(
+    return Scaffold(
+      appBar: AppBar(
+        leadingWidth: 24,
+        iconTheme: IconThemeData(color: Colors.teal.shade800),
+        title: const AppTitle(title: 'Advisor Assign'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      backgroundColor: const Color(0xfff5f5f5),
+      body: isLoading
+          ? const LoadingScreen()
+          : Center(
               child: Form(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -197,7 +203,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                 ),
               ),
             ),
-          );
+    );
   }
 
   Future<void> _handleAdvisorAssign(
@@ -376,7 +382,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
               color: const Color.fromARGB(255, 24, 143, 121),
             ),
           ),
-          items: widget.teacherList.map((teacher) {
+          items: teacherList.map((teacher) {
             return DropdownMenuItem(
               value: teacher,
               child: Text(

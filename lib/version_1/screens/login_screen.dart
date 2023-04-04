@@ -17,9 +17,9 @@ class LoginScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              LoginHeader(),
-              SizedBox(height: 40),
+            children: <Widget>[
+              const LoginHeader(),
+              const SizedBox(height: 40),
               LoginBody(),
             ],
           ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/providers.dart';
 import '../services/helper.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
@@ -82,11 +83,11 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   formKey.currentState!.save();
                   String tid = tIdController.text.trim();
                   String initial = intialController.text.trim().toUpperCase();
-                  loggedInUser.usertype = 'teacher';
-                  loggedInUser.teacherId = tid;
-                  loggedInUser.initials = initial;
-                  loggedInUser.isHod = checkbox.isChecked;
-                  debugPrint('Teacher page: $loggedInUser', wrapWidth: 1024);
+                  context.read<AuthProvider>().setData(
+                        teacherId: tid,
+                        initials: initial,
+                      );
+                  debugPrint('Teacher page: ', wrapWidth: 1024);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -178,10 +179,8 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) => setState(() {
-          loggedInUser.designation = value.toString();
-          // formKey.currentState!.validate();
-        }),
+        onChanged: (value) =>
+            context.read<AuthProvider>().setData(designation: value.toString()),
       ),
     );
   }
@@ -271,10 +270,8 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) => setState(() {
-          loggedInUser.department = value.toString();
-          // formKey.currentState!.validate();
-        }),
+        onChanged: (value) =>
+            context.read<AuthProvider>().setData(department: value.toString()),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_auth/email_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
+import 'package:http/http.dart' as http;
 
 import '../../firebase_options.dart';
 import '../models/user.dart';
@@ -15,19 +18,23 @@ import 'providers.dart';
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await dotenv.load(fileName: '.env');
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
   await LocalNotification.initialize();
-  
-  emailAuth = EmailAuth(sessionName: 'UniPort');
-  await emailAuth.config(remoteServerConfiguration);
+}
 
-  prefs = await SharedPreferences.getInstance();
-  google = GoogleSignIn(scopes: <String>[
-    'email',
-  ]);
-  loggedInUser = User();
-  await loggedInUser.load();
+Future<Uint8List?> getLargeIconBytes(String photoUrl) async {
+  try {
+    final response = await http.get(Uri.parse(photoUrl));
+    return response.bodyBytes;
+  } catch (e) {
+    print('Error getting large icon bytes: $e');
+    return null;
+  }
 }
 
 String getChatId(String uid1, String uid2) {
@@ -37,13 +44,6 @@ String getChatId(String uid1, String uid2) {
     return uid2 + uid1;
   }
 }
-
-Future<List<User>> userList() => FirebaseFirestore.instance
-    .collection('users')
-    .where('approved', isEqualTo: true)
-    .where('uid', isNotEqualTo: loggedInUser.uid)
-    .get()
-    .then((value) => value.docs.map((e) => User.fromJson(e.data())).toList());
 
 String formatTime(int miliseconds) {
   final time = DateTime.fromMillisecondsSinceEpoch(miliseconds);

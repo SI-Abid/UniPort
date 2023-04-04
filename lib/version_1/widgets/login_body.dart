@@ -1,22 +1,21 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:uniport/version_1/providers/providers.dart';
 
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 import '../services/providers.dart';
 
-class LoginBody extends StatefulWidget {
-  const LoginBody({super.key});
+class LoginBody extends StatelessWidget {
+  LoginBody({super.key});
 
-  @override
-  State<LoginBody> createState() => _LoginBodyState();
-}
-
-class _LoginBodyState extends State<LoginBody> {
   final formKey = GlobalKey<FormState>();
+
   final emailController = TextEditingController();
+
   final passwordController = TextEditingController();
 
   @override
@@ -82,7 +81,7 @@ class _LoginBodyState extends State<LoginBody> {
                     return;
                   }
                   //navigate to dashboard
-                  navigateOnLogin(context, email, password);
+                  onLogin(context, email, password);
                 },
               ),
               const SizedBox(height: 5),
@@ -101,63 +100,59 @@ class _LoginBodyState extends State<LoginBody> {
     );
   }
 
-  Future<dynamic> navigateOnLogin(
-      BuildContext context, String email, String password) {
+  Future<dynamic> onLogin(BuildContext context, String email, String password) {
     return Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
         builder: (context) => FutureBuilder(
-          future: loggedInUser.loginWithEmail(email, password),
+          future:
+              context.read<AuthProvider>().handleEmailSignIn(email, password),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.data == true) {
-                if (loggedInUser.approved!) {
+            if (snapshot.hasData) {
+              switch (context.read<AuthProvider>().status) {
+                case Status.authenticated:
                   return const HomeScreen();
-                }
-                Fluttertoast.showToast(
-                    msg: "Your registration is waiting for approval",
+                case Status.approvalRequired:
+                  Fluttertoast.showToast(
+                    msg: 'Your account is awaiting approval',
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
                     backgroundColor: Colors.red,
                     textColor: Colors.white,
-                    fontSize: 16.0);
-                loggedInUser.signOut();
-                return const LoginScreen();
-              } else {
-                Fluttertoast.showToast(
-                    msg: "Invalid Email or Password",
+                    fontSize: 16.0,
+                  );
+                  break;
+                default:
+                  Fluttertoast.showToast(
+                    msg: 'An error occurred',
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
                     backgroundColor: Colors.red,
                     textColor: Colors.white,
-                    fontSize: 16.0);
-                loggedInUser.signOut();
-                return const LoginScreen();
+                    fontSize: 16.0,
+                  );
+                  break;
               }
-            }
-            return FutureBuilder(
-              future: Connectivity().checkConnectivity(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.data == ConnectivityResult.none) {
-                    Fluttertoast.showToast(
-                        msg: "No Internet Connection",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0);
-                    loggedInUser.signOut();
-
-                    return const LoginScreen();
+              return const LoginScreen();
+            } else {
+              return FutureBuilder(
+                future: Connectivity().checkConnectivity(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return const LoadingScreen();
+                  } else {
+                    return const AlertDialog(
+                      icon: Icon(Icons.error),
+                      iconColor: Colors.red,
+                      title: Text('No Internet Connection'),
+                      content: Text('Please check your internet connection'),
+                    );
                   }
-                }
-                return const LoadingScreen();
-              },
-            );
+                },
+              );
+            }
           },
         ),
       ),

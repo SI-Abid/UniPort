@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/providers.dart';
 import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
@@ -17,12 +19,6 @@ class OtpVerifyScreen extends StatefulWidget {
 
 class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    otpHolder = "";
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +122,10 @@ class SvgHeader extends StatelessWidget {
 }
 
 class OtpVerifyBody extends StatelessWidget {
-  const OtpVerifyBody({super.key, required this.email});
+  OtpVerifyBody({super.key, required this.email});
   final String email;
+  final List<TextEditingController> digitControllers =
+      List.filled(6, TextEditingController());
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -149,13 +147,13 @@ class OtpVerifyBody extends StatelessWidget {
           children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
-                SingleDigitField(),
-                SingleDigitField(),
-                SingleDigitField(),
-                SingleDigitField(),
-                SingleDigitField(),
-                SingleDigitField(),
+              children: [
+                SingleDigitField(controller: digitControllers[0]),
+                SingleDigitField(controller: digitControllers[1]),
+                SingleDigitField(controller: digitControllers[2]),
+                SingleDigitField(controller: digitControllers[3]),
+                SingleDigitField(controller: digitControllers[4]),
+                SingleDigitField(controller: digitControllers[5]),
               ],
             ),
             const SizedBox(height: 20),
@@ -179,35 +177,44 @@ class OtpVerifyBody extends StatelessWidget {
             ),
             const CounterDown(),
             const SizedBox(height: 20),
-            ActionButton(
-              text: 'VERIFY',
-              onPressed: () {
-                // print('Email: $email');
-                // print('OTP: $otpHolder');
-                if (emailAuth.validateOtp(
-                    recipientMail: email, userOtp: otpHolder)) {
+            Consumer<AuthProvider>(builder: (context, auth, child) {
+              return ActionButton(
+                text: 'VERIFY',
+                onPressed: () {
+                  String otp = digitControllers.map((e) => e.text).join();
+                  auth.handleOtpVerification(email, otp);
                   // print('OTP Verified');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SetNewPasswordScreen(
-                        email: email,
+                  if (auth.status == Status.otpVerificationSuccess) {
+                    Fluttertoast.showToast(
+                        msg: 'OTP Verified',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.green,
+                        textColor: Colors.white,
+                        fontSize: 16.0);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SetNewPasswordScreen(
+                          email: email,
+                        ),
                       ),
-                    ),
-                  );
-                } else {
-                  // print('OTP Not Verified');
-                  Fluttertoast.showToast(
-                      msg: 'OTP Not Verified',
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.red,
-                      textColor: Colors.white,
-                      fontSize: 16.0);
-                }
-              },
-            ),
+                    );
+                  } else {
+                    // print('OTP Not Verified');
+                    Fluttertoast.showToast(
+                        msg: 'OTP Not Verified',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0);
+                  }
+                },
+              );
+            }),
           ],
         ),
       ),
@@ -216,22 +223,21 @@ class OtpVerifyBody extends StatelessWidget {
 }
 
 class SingleDigitField extends StatelessWidget {
-  const SingleDigitField({super.key});
-
+  const SingleDigitField({super.key, required this.controller});
+  final TextEditingController controller;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 45,
       width: 40,
       child: TextFormField(
+        controller: controller,
         onChanged: ((value) {
           if (value.length == 1) {
-            otpHolder += value;
             FocusScope.of(context).nextFocus();
           }
           if (value.isEmpty) {
             FocusScope.of(context).previousFocus();
-            otpHolder = otpHolder.substring(0, otpHolder.length - 1);
           }
         }),
         style: GoogleFonts.sen(

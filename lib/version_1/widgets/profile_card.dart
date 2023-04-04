@@ -10,7 +10,7 @@ class ProfileCard extends StatelessWidget {
     required this.messageSender,
   });
 
-  final User messageSender;
+  final UserModel messageSender;
 
   @override
   Widget build(BuildContext context) {

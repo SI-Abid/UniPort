@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:uniport/version_1/models/models.dart';
+import 'package:uniport/version_1/providers/providers.dart';
 
 import '../services/helper.dart';
 import '../services/providers.dart';
@@ -76,7 +79,7 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
 
   final lNameController = TextEditingController();
 
-  final stdController = TextEditingController();
+  final phoneController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -126,7 +129,7 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
 
               // Should be Contact
               CustomTextField(
-                controller: stdController,
+                controller: phoneController,
                 hintText: 'Contact',
                 formValidator: phoneValidator,
                 keyboardType: TextInputType.phone,
@@ -144,10 +147,12 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
                   formKey.currentState!.save();
                   String fname = fNameController.text.trim();
                   String lname = lNameController.text.trim();
-                  String std = stdController.text.trim();
-                  loggedInUser.firstName = fname;
-                  loggedInUser.lastName = lname;
-                  loggedInUser.contact = std;
+                  String std = phoneController.text.trim();
+                  context.read<AuthProvider>().setData(
+                        firstName: fname,
+                        lastName: lname,
+                        contact: std,
+                      );
                   // print('Personal page: $loggedInUser');
                   Navigator.push(
                     context,

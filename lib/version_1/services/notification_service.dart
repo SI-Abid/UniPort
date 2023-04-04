@@ -1,9 +1,13 @@
 import 'package:app_settings/app_settings.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:uniport/version_1/services/helper.dart';
 import 'package:uniport/version_1/services/providers.dart';
+
+import '../models/user.dart';
 
 class LocalNotification {
   static FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -39,13 +43,17 @@ class LocalNotification {
   }
 
   static void listenForTokenRefresh() {
+    messaging.getToken().then((token) {
+      if (token != loggedInUser.pushToken) {
+        loggedInUser.updatePushToken(token!);
+      }
+    });
     messaging.onTokenRefresh.listen((token) {
       loggedInUser.updatePushToken(token);
     });
   }
 
-  static Future<void> initialize([BuildContext? context]) async {
-    // await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  static Future<void> initialize() async {
     await requestNotificationPermission();
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -53,53 +61,67 @@ class LocalNotification {
         InitializationSettings(android: initializationSettingsAndroid);
     await notificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (response) {},
     );
-    FirebaseMessaging.onMessage.listen((message) {
-      print('App in foreground: $message');
-      if (message.notification != null) {
-        print('Notification: ${message.data['sender']}');
-        print('Notification: ${loggedInUser.openedChatId}');
-        if (message.data['sender'] != loggedInUser.openedChatId) {
-          showNotification(message);
+  }
+
+  static void handleMessageTap(BuildContext context, RemoteMessage message) {
+    if (message.notification != null) {
+      String userId = message.data['sender']!;
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get()
+          .then((value) {
+        UserModel user = UserModel.fromJson(value.data()!);
+        if (context.mounted) {
+          return;
         }
-      }
-    });
-    // FirebaseMessaging.instance;
-    // FirebaseMessaging.onBackgroundMessage((message) async {
-    //   print('App in background: $message');
-    //   if (message.notification != null) {
-    //     print('Notification: ${message.notification!.title}');
-    //     showNotification(message);
-    //   }
-    // });
+        Navigator.of(context).pushNamed('/message', arguments: user);
+      });
+    }
   }
 
   static Future<void> showNotification(RemoteMessage message) async {
     try {
       final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      const NotificationDetails notificationDetails = NotificationDetails(
-          android: AndroidNotificationDetails(
-        'pushnotification',
-        'pushnotificationchannel',
+      AndroidNotificationChannel channel = const AndroidNotificationChannel(
+        'chat',
+        'chatchannel',
         importance: Importance.high,
+        sound: RawResourceAndroidNotificationSound('notification'),
+      );
+      final largeIconBytes =
+          await getLargeIconBytes(message.data['senderIcon']);
+      final largeIcon = largeIconBytes != null
+          ? DrawableResourceAndroidBitmap(
+              largeIconBytes.buffer.asUint8List().toString())
+          : null;
+      NotificationDetails notificationDetails = NotificationDetails(
+          android: AndroidNotificationDetails(
+        channel.id,
+        channel.name,
+        importance: channel.importance,
         priority: Priority.high,
         ticker: 'ticker',
         visibility: NotificationVisibility.public,
-        sound: RawResourceAndroidNotificationSound('notification'),
+        sound: channel.sound,
         icon: '@mipmap/ic_launcher',
+        largeIcon: largeIcon ??
+            const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        category: AndroidNotificationCategory.message,
+        groupKey: message.data['sender'],
       ));
 
       await notificationsPlugin.show(
         id,
-        message.notification!.title,
-        message.notification!.body,
+        message.notification?.title ?? 'New Message',
+        message.notification?.body ?? 'You have a new message',
         notificationDetails,
-        payload: message.data['senderId'],
+        payload: message.data['sender'],
       );
     } on Exception catch (e) {
       if (kDebugMode) {
-        print(e);
+        print('error on show noti: $e');
       }
     }
   }

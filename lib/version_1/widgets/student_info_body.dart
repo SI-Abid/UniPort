@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/providers.dart';
 import '../services/helper.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
@@ -83,10 +84,11 @@ class _StudentInfoBodyState extends State<StudentInfoBody> {
                   String section = sectionController.text.trim();
                   String batch = batchController.text.trim();
                   formKey.currentState!.save();
-                  loggedInUser.usertype = 'student';
-                  loggedInUser.studentId = sid;
-                  loggedInUser.section = section;
-                  loggedInUser.batch = batch;
+                  context.read<AuthProvider>().setData(
+                        studentId: sid,
+                        section: section,
+                        batch: batch,
+                      );
                   // print('Student page: $loggedInUser');
                   Navigator.push(
                     context,
@@ -188,10 +190,9 @@ class _StudentInfoBodyState extends State<StudentInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) => setState(() {
-          loggedInUser.designation = value.toString();
-          // formKey.currentState!.validate();
-        }),
+        onChanged: (value) {
+          context.read<AuthProvider>().setData(department: value.toString());
+        },
       ),
     );
   }

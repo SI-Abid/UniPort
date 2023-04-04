@@ -11,7 +11,7 @@ class ChatTile extends StatelessWidget {
       {super.key, required this.lastMsg, required this.messageSender});
 
   final Message lastMsg;
-  final User messageSender;
+  final UserModel messageSender;
 
   @override
   Widget build(BuildContext context) {
@@ -56,17 +56,17 @@ class ChatTile extends StatelessWidget {
               )
             : Row(
                 children: [
-                  if(isMe) Text(
-                    'You: ',
-                    softWrap: true,
-                    maxLines: 1,
-                    style: GoogleFonts.sen(
-                      color: Colors.grey.shade800,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
+                  if (isMe)
+                    Text(
+                      'You: ',
+                      softWrap: true,
+                      maxLines: 1,
+                      style: GoogleFonts.sen(
+                        color: Colors.grey.shade800,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                  
                   Icon(
                     Icons.image,
                     color: Colors.teal.shade600,

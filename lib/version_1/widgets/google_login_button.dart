@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:uniport/version_1/services/providers.dart';
+import 'package:provider/provider.dart';
+import 'package:uniport/version_1/providers/auth_provider.dart';
 
 import '../screens/screens.dart';
 
@@ -30,42 +31,21 @@ class GoogleLoginButton extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => FutureBuilder(
-                future: loggedInUser.loginWithGoogle(),
+                future: context.read<AuthProvider>().handleGoogleSignIn(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.data == 'invalid email') {
-                      debugPrint(snapshot.data);
-                      Fluttertoast.showToast(
-                        msg: 'Only academic email is allowed',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                      loggedInUser.signOut();
-                      return const LoginScreen();
-                    }
-                    if (snapshot.data == 'success') {
-                      if (loggedInUser.approved == true) {
-                        return const HomeScreen();
-                      }
-                      Fluttertoast.showToast(
-                        msg: 'Your account is not approved yet',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                      loggedInUser.signOut();
-                      return const LoginScreen();
-                    } else if (snapshot.data == 'new user') {
-                      return const PersonalInfoScreen();
+                    if (snapshot.hasData && snapshot.data == true) {
+                      return const HomeScreen();
                     } else {
-                      return const LoginScreen();
+                      Fluttertoast.showToast(
+                        msg: 'Login Failed',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
                     }
                   }
                   return const LoadingScreen();

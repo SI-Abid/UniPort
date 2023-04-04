@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:uniport/version_1/providers/providers.dart';
 import 'package:uniport/version_1/services/providers.dart';
 
 import '../services/helper.dart';
@@ -145,39 +147,37 @@ class _SetPasswordBodyState extends State<SetPasswordBody> {
                     );
                     return;
                   } else {
+                    context.read<AuthProvider>().handleRegistration(pass);
+                    Navigator.popUntil(context, (route) => false);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FutureBuilder(
-                          future: loggedInUser.create(pass),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              if (snapshot.data == true) {
-                                Fluttertoast.showToast(
-                                  msg: 'Registration Successful',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.green,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
-                                return const LoginScreen();
-                              } else {
-                                Fluttertoast.showToast(
-                                  msg: 'Registration Failed',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
-                                // FirebaseAuth.instance.currentUser!.delete();
-                                return const LoginScreen();
-                              }
+                        builder: (context) => Consumer<AuthProvider>(
+                          builder: (context, snapshot, child) {
+                            if (snapshot.status == Status.authenticated) {
+                              Fluttertoast.showToast(
+                                msg: 'Registration Successful',
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.green,
+                                textColor: Colors.white,
+                                fontSize: 16.0,
+                              );
+                              return const LoginScreen();
+                            } else {
+                              Fluttertoast.showToast(
+                                msg: 'Registration Failed',
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0,
+                              );
+                              // FirebaseAuth.instance.currentUser!.delete();
+                              return const LoginScreen();
                             }
-                            return const LoadingScreen();
                           },
                         ),
                       ),

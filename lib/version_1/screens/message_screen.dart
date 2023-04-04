@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
@@ -15,7 +16,7 @@ import '../widgets/widgets.dart';
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key, required this.messageSender});
-  final User messageSender;
+  final UserModel messageSender;
 
   @override
   State<MessageScreen> createState() => _MessageScreenState();
@@ -27,7 +28,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   late String chatId;
   late List<QueryDocumentSnapshot> messages;
-  late User messageSender;
+  late UserModel messageSender;
   int count = 0;
   bool profileViewed = false;
 
@@ -38,6 +39,7 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<ChatProvider>().initChatProvider();
     messageSender = widget.messageSender;
     loggedInUser.openedChatId = messageSender.uid;
     chatId = getChatId(loggedInUser.uid, messageSender.uid);
@@ -200,7 +202,11 @@ class _MessageScreenState extends State<MessageScreen> {
                       .then((value) => FirebaseStorage.instance
                           .ref()
                           .child('images/$chatId')
-                          .delete())
+                          .listAll())
+                          .then((value) => value.items.forEach((element) {
+                                element.delete();
+                              })
+                          )
                       .then((value) => Navigator.pop(context));
                   // FirebaseStorage.instance
                   //     .ref()
@@ -480,7 +486,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   // send image message
-  Future<void> sendChatImage(User chatUser, File file) async {
+  Future<void> sendChatImage(UserModel chatUser, File file) async {
     //getting image file extension
     final ext = file.path.split('.').last;
 
@@ -504,6 +510,6 @@ class _MessageScreenState extends State<MessageScreen> {
       type: MessageType.image,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
-    loggedInUser.sendMessageToUser(chatUser, message);
+    .sendMessageToUser(chatUser, message);
   }
 }

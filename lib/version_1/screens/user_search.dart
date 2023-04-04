@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/user.dart';
 
 class MySearchDelegate extends SearchDelegate {
-  final List<User> list;
+  final List<UserModel> list;
   MySearchDelegate({required this.list});
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -39,7 +39,7 @@ class MySearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final List<User> suggestions = [];
+    final List<UserModel> suggestions = [];
     for (var user in list) {
       final name = user.name;
       final sid = user.studentId;

@@ -144,7 +144,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           if (snapshot.hasData == false) {
                             return const SizedBox.shrink();
                           }
-                          final user = User.fromJson(
+                          final user = UserModel.fromJson(
                               snapshot.data!.data() as Map<String, dynamic>);
                           return GroupMessageTile(
                               message: message, sender: user);
@@ -380,7 +380,7 @@ class GroupMessageTile extends StatelessWidget {
   const GroupMessageTile(
       {super.key, required this.message, required this.sender});
   final Message message;
-  final User sender;
+  final UserModel sender;
   @override
   Widget build(BuildContext context) {
     final isMe = message.sender == loggedInUser.uid;

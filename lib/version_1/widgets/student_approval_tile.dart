@@ -12,7 +12,7 @@ class PendingStudentTile extends StatefulWidget {
     required this.trigger,
   });
   final List<String> selected;
-  final User user;
+  final UserModel user;
   final Function trigger;
   @override
   State<PendingStudentTile> createState() => _PendingStudentTileState();

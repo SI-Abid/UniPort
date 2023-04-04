@@ -41,8 +41,8 @@ class _StudentApprovalState extends State<StudentApproval> {
               if (snapshot.data == null) {
                 return const LoadingScreen();
               }
-              final List<User> users = snapshot.data!.docs
-                  .map((e) => User.fromJson(e.data()))
+              final List<UserModel> users = snapshot.data!.docs
+                  .map((e) => UserModel.fromJson(e.data()))
                   .toList();
               if (users.isEmpty) {
                 return Center(
