@@ -61,7 +61,7 @@ class _PendingTeacherTileState extends State<PendingTeacherTile> {
                       color: Colors.white,
                     ),
                   )
-                : Avatar(messageSender: widget.user),
+                : Avatar(user: widget.user),
             const SizedBox(width: 10),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,

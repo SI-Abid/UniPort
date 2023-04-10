@@ -1,23 +1,25 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uniport/version_1/services/providers.dart';
 
 import '../models/models.dart';
+import '../screens/message_screen.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 
 class ChatTile extends StatelessWidget {
   const ChatTile(
-      {super.key, required this.lastMsg, required this.messageSender});
+      {super.key, required this.message, required this.messageSender});
 
-  final Message lastMsg;
+  final Message message;
   final UserModel messageSender;
 
   @override
   Widget build(BuildContext context) {
-    bool isMe = lastMsg.sender == loggedInUser.uid;
+    bool isMe = message.sender == FirebaseAuth.instance.currentUser!.uid;
     // print('${lastMsg.sender} ${loggedInUser.uid}');
-    bool isUnread = lastMsg.readAt == null && !isMe;
+    bool isUnread = message.readAt == null && !isMe;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -30,9 +32,13 @@ class ChatTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: ListTile(
         onTap: () {
-          Navigator.pushNamed(context, '/message', arguments: messageSender);
+          Navigator.pushNamed(context, MessageScreen.routeName,
+              arguments: {
+                'message': message,
+                'messageSender': messageSender,
+              });
         },
-        leading: Avatar(messageSender: messageSender),
+        leading: Avatar(user: messageSender),
         title: Text(
           messageSender.name,
           softWrap: true,
@@ -43,9 +49,9 @@ class ChatTile extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        subtitle: lastMsg.type == MessageType.text
+        subtitle: message.type == MessageType.text
             ? Text(
-                '${isMe ? 'You: ' : ''}${lastMsg.content}',
+                '${isMe ? 'You: ' : ''}${message.content}',
                 softWrap: true,
                 maxLines: 1,
                 style: GoogleFonts.sen(
@@ -90,7 +96,7 @@ class ChatTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              formatTime(lastMsg.createdAt),
+              formatTime(message.createdAt),
               style: GoogleFonts.sen(
                 fontSize: 12,
                 fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,

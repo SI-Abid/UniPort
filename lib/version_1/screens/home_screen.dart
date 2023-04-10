@@ -1,36 +1,35 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'package:uniport/version_1/providers/providers.dart';
+import 'package:uniport/version_1/models/user.dart';
+import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/screens/screens.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
 import '../widgets/widgets.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
+  static const String routeName = '/home';
   const HomeScreen({super.key, this.debug = false});
   final bool debug;
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  late final ChatProvider chatProvider;
-  late final AuthProvider authProvider;
-
   @override
   void initState() {
     super.initState();
-    chatProvider = context.read<ChatProvider>();
-    authProvider = context.read<AuthProvider>();
     // * LISTEN FOR USER TOKEN REFRESH
-    LocalNotification.listenForTokenRefresh();
+    // LocalNotification.listenForTokenRefresh();
 
     // * LISTEN FOR NOTIFICATION TAP
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -56,15 +55,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         showNotification(message);
       }
       return;
-    });
-
-    firebaseMessaging.getToken().then((token) {
-      print('push token: $token');
-      if (token != null && token != chatProvider.user.pushToken) {
-        chatProvider.updatePushToken(token);
-      }
-    }).catchError((err) {
-      Fluttertoast.showToast(msg: err.message.toString());
     });
   }
 
@@ -103,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    chatProvider.updateOnlineStatus(false);
+    ref.read(authControllerProvider).setOnlineStatus(false);
     super.dispose();
   }
 
@@ -111,9 +101,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      chatProvider.updateOnlineStatus(true);
+      ref.read(authControllerProvider).setOnlineStatus(true);
     } else {
-      chatProvider.updateOnlineStatus(false);
+      ref.read(authControllerProvider).setOnlineStatus(false);
     }
     debugPrint('HomeScreen: $state');
   }
@@ -131,9 +121,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              authProvider.handleSignOut();
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login', (Route<dynamic> route) => false);
+              ref.read(authControllerProvider).signOut(context);
             },
             child: Card(
               elevation: 2,
@@ -155,76 +143,94 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       body: SingleChildScrollView(
         child: SizedBox(
           width: double.infinity,
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            runSpacing: 10,
-            spacing: 10,
-            children: [
-              // *NOTE: for all users
-              const CustomCard(
-                  iconPath: 'assets/icon/chat_any.svg',
-                  title: 'CHAT',
-                  subtitle: 'ONE-ONE',
-                  actionName: 'MESSAGE',
-                  routeName: '/chat'),
-              // *NOTE: for students
-              if (chatProvider.user.usertype == 'student' || widget.debug) ...[
-                const CustomCard(
-                    iconPath: 'assets/icon/anonymous.svg',
-                    title: 'CHAT',
-                    subtitle: 'ANONYMOUS',
-                    actionName: 'REPORT',
-                    routeName: '/studentReport'),
-                const CustomCard(
-                    iconPath: 'assets/icon/group_chat.svg',
-                    title: 'GROUP CHAT',
-                    subtitle: 'ADVISOR & COURSES',
-                    actionName: 'MESSAGE',
-                    routeName: '/groupChat'),
-              ],
-              // *NOTE: for teachers
-              if (chatProvider.user.usertype == 'teacher' || widget.debug)
-                const CustomCard(
-                    iconPath: 'assets/icon/assigned_batch.svg',
-                    title: 'ASSIGNED BATCH',
-                    subtitle: 'GROUP CHAT',
-                    actionName: 'MESSAGE',
-                    routeName: '/assignedBatch'),
-              if (chatProvider.user.usertype == 'teacher' || widget.debug)
-                const CustomCard(
-                    iconPath: 'assets/icon/student.svg',
-                    title: 'STUDENTS',
-                    subtitle: 'PENDING',
-                    actionName: 'APPROVE',
-                    routeName: '/studentApproval'),
-              // * NOTE: for HODs
-              if (chatProvider.user.isHod == true || widget.debug) ...[
-                const CustomCard(
-                    iconPath: 'assets/icon/teacher.svg',
-                    title: 'TEACHERS',
-                    subtitle: 'PENDING',
-                    actionName: 'APPROVE',
-                    routeName: '/teacherApproval'),
-                const CustomCard(
-                  iconPath: 'assets/icon/batch_advisor.svg',
-                  title: 'ADVISOR',
-                  subtitle: 'BATCH',
-                  actionName: 'ASSIGN',
-                  routeName: '/assignAdvisor',
+          child: ref.watch(userAuthProvider).when(
+                data: (user) {
+                  return _getFeatureCards(user);
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
                 ),
-                const CustomCard(
-                    iconPath: 'assets/icon/anonymous.svg',
-                    title: 'REPORTS',
-                    subtitle: 'ANONYMOUS',
-                    actionName: 'VIEW',
-                    routeName: '/reportView'),
-              ]
-            ],
-          ),
+                error: (err, stack) {
+                  Fluttertoast.showToast(msg: err.toString());
+                  return const Center(
+                    child: Text('Error'),
+                  );
+                },
+              ),
         ),
       ),
       backgroundColor:
           widget.debug ? Colors.deepPurple.shade100 : const Color(0xfff5f5f5),
+    );
+  }
+
+  Wrap _getFeatureCards(UserModel? user) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      runSpacing: 10,
+      spacing: 10,
+      children: [
+        // *NOTE: for all users
+        const CustomCard(
+            iconPath: 'assets/icon/chat_any.svg',
+            title: 'CHAT',
+            subtitle: 'ONE-ONE',
+            actionName: 'MESSAGE',
+            routeName: ChatScreen.routeName),
+        // *NOTE: for students
+        if (user!.usertype == 'student' || widget.debug) ...[
+          const CustomCard(
+              iconPath: 'assets/icon/anonymous.svg',
+              title: 'CHAT',
+              subtitle: 'ANONYMOUS',
+              actionName: 'REPORT',
+              routeName: '/studentReport'),
+          const CustomCard(
+              iconPath: 'assets/icon/group_chat.svg',
+              title: 'GROUP CHAT',
+              subtitle: 'ADVISOR & COURSES',
+              actionName: 'MESSAGE',
+              routeName: '/groupChat'),
+        ],
+        // *NOTE: for teachers
+        if (user.usertype == 'teacher' || widget.debug)
+          const CustomCard(
+              iconPath: 'assets/icon/assigned_batch.svg',
+              title: 'ASSIGNED BATCH',
+              subtitle: 'GROUP CHAT',
+              actionName: 'MESSAGE',
+              routeName: '/assignedBatch'),
+        if (user.usertype == 'teacher' || widget.debug)
+          const CustomCard(
+              iconPath: 'assets/icon/student.svg',
+              title: 'STUDENTS',
+              subtitle: 'PENDING',
+              actionName: 'APPROVE',
+              routeName: '/studentApproval'),
+        // * NOTE: for HODs
+        if (user.isHod == true || widget.debug) ...[
+          const CustomCard(
+              iconPath: 'assets/icon/teacher.svg',
+              title: 'TEACHERS',
+              subtitle: 'PENDING',
+              actionName: 'APPROVE',
+              routeName: '/teacherApproval'),
+          const CustomCard(
+            iconPath: 'assets/icon/batch_advisor.svg',
+            title: 'ADVISOR',
+            subtitle: 'BATCH',
+            actionName: 'ASSIGN',
+            routeName: '/assignAdvisor',
+          ),
+          const CustomCard(
+            iconPath: 'assets/icon/anonymous.svg',
+            title: 'REPORTS',
+            subtitle: 'ANONYMOUS',
+            actionName: 'VIEW',
+            routeName: '/reportView',
+          ),
+        ]
+      ],
     );
   }
 }

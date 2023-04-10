@@ -3,12 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../services/callback_function.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
-class EmailVerifyScreen extends StatelessWidget {
-  const EmailVerifyScreen({super.key});
+class ForgetPasswordScreen extends StatelessWidget {
+  static const String routeName = '/forget_password';
+  const ForgetPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +35,9 @@ class EmailVerifyScreen extends StatelessWidget {
             child: Column(
               // mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
-                EmailVerifyHeader(),
+                ForgetPasswordHeader(),
                 SizedBox(height: 40),
-                EmailVerifyBody(),
+                ForgetPasswordBody(),
               ],
             ),
           ),
@@ -47,8 +47,8 @@ class EmailVerifyScreen extends StatelessWidget {
   }
 }
 
-class EmailVerifyHeader extends StatelessWidget {
-  const EmailVerifyHeader({
+class ForgetPasswordHeader extends StatelessWidget {
+  const ForgetPasswordHeader({
     Key? key,
   }) : super(key: key);
 
@@ -100,20 +100,21 @@ class EmailVerifyHeader extends StatelessWidget {
   }
 }
 
-class EmailVerifyBody extends StatefulWidget {
-  const EmailVerifyBody({super.key});
+class ForgetPasswordBody extends StatefulWidget {
+  const ForgetPasswordBody({super.key});
 
   @override
-  State<EmailVerifyBody> createState() => _EmailVerifyBodyState();
+  State<ForgetPasswordBody> createState() => _ForgetPasswordBodyState();
 }
 
-class _EmailVerifyBodyState extends State<EmailVerifyBody> {
+class _ForgetPasswordBodyState extends State<ForgetPasswordBody> {
   final emailController = TextEditingController();
   @override
   void dispose() {
     emailController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -139,7 +140,7 @@ class _EmailVerifyBodyState extends State<EmailVerifyBody> {
               text: 'SEND E-MAIL',
               onPressed: () async {
                 final email = emailController.text.trim();
-                if(email.isEmpty) {
+                if (email.isEmpty) {
                   Fluttertoast.showToast(
                     msg: 'Please enter your email',
                     toastLength: Toast.LENGTH_SHORT,
@@ -151,29 +152,6 @@ class _EmailVerifyBodyState extends State<EmailVerifyBody> {
                   );
                   return;
                 }
-                await onOtpRequest(email).then((value) {
-                  if (value == true) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OtpVerifyScreen(
-                          email: email,
-                        ),
-                      ),
-                    );
-                  } else {
-                    // print('OTP Request Failed');
-                    Fluttertoast.showToast(
-                      msg: 'Email not registered',
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.red,
-                      textColor: Colors.white,
-                      fontSize: 16.0,
-                    );
-                  }
-                });
               },
             ),
           ],

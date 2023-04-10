@@ -6,14 +6,15 @@ import '../widgets/color_constant.dart';
 import '../widgets/student_info_body.dart';
 import '../widgets/teacher_info_body.dart';
 
-class AcademicInfoRegScreen extends StatefulWidget {
-  const AcademicInfoRegScreen({Key? key}) : super(key: key);
+class AcademicInfoScreen extends StatefulWidget {
+  static const String routeName = '/academic-info';
+  const AcademicInfoScreen({Key? key}) : super(key: key);
 
   @override
-  State<AcademicInfoRegScreen> createState() => _AcademicInfoRegScreenState();
+  State<AcademicInfoScreen> createState() => _AcademicInfoScreenState();
 }
 
-class _AcademicInfoRegScreenState extends State<AcademicInfoRegScreen> {
+class _AcademicInfoScreenState extends State<AcademicInfoScreen> {
   String userType = "student";
 
   @override

@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import '../providers/providers.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
 class OtpVerifyScreen extends StatefulWidget {
+  static const routeName = '/otp-verify';
   final String email;
   const OtpVerifyScreen({super.key, required this.email});
 
@@ -177,44 +176,13 @@ class OtpVerifyBody extends StatelessWidget {
             ),
             const CounterDown(),
             const SizedBox(height: 20),
-            Consumer<AuthProvider>(builder: (context, auth, child) {
-              return ActionButton(
-                text: 'VERIFY',
-                onPressed: () {
-                  String otp = digitControllers.map((e) => e.text).join();
-                  auth.handleOtpVerification(email, otp);
-                  // print('OTP Verified');
-                  if (auth.status == Status.otpVerificationSuccess) {
-                    Fluttertoast.showToast(
-                        msg: 'OTP Verified',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.green,
-                        textColor: Colors.white,
-                        fontSize: 16.0);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SetNewPasswordScreen(
-                          email: email,
-                        ),
-                      ),
-                    );
-                  } else {
-                    // print('OTP Not Verified');
-                    Fluttertoast.showToast(
-                        msg: 'OTP Not Verified',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0);
-                  }
-                },
-              );
-            }),
+            ActionButton(
+              text: 'VERIFY',
+              onPressed: () {
+                String otp = digitControllers.map((e) => e.text).join();
+                // print('OTP Verified');
+              },
+            ),
           ],
         ),
       ),

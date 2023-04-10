@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:uniport/version_1/models/user.dart';
 
 class Message {
+  String chatId=''; // id of the chat the message belongs to
   final String content; // message content
   final String sender; // uid of the sender
   final MessageType type; // type of the message
@@ -76,7 +78,7 @@ class Message {
     }
   }
 
-  void update(String newMsg, String chatId, bool lastMessage) {
+  void update(String newMsg, bool lastMessage) {
     FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
@@ -95,4 +97,14 @@ class Message {
 enum MessageType {
   text,
   image,
+}
+
+class GroupMessage {
+  final Message message;
+  final UserModel sender;
+
+  GroupMessage({
+    required this.message,
+    required this.sender,
+  });
 }

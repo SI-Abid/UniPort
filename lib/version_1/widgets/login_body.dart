@@ -1,17 +1,19 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'package:uniport/version_1/providers/providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/auth_controller.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
-import '../services/providers.dart';
 
-class LoginBody extends StatelessWidget {
-  LoginBody({super.key});
+class LoginBody extends ConsumerStatefulWidget {
+  const LoginBody({super.key});
 
+  @override
+  ConsumerState<LoginBody> createState() => _LoginBodyState();
+}
+
+class _LoginBodyState extends ConsumerState<LoginBody> {
   final formKey = GlobalKey<FormState>();
 
   final emailController = TextEditingController();
@@ -80,8 +82,9 @@ class LoginBody extends StatelessWidget {
                   if (formKey.currentState!.validate() == false) {
                     return;
                   }
-                  //navigate to dashboard
-                  onLogin(context, email, password);
+                  // handle login
+                  ref.read(authControllerProvider).signInWithEmail(context,
+                      email: email, password: password);
                 },
               ),
               const SizedBox(height: 5),
@@ -97,66 +100,6 @@ class LoginBody extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Future<dynamic> onLogin(BuildContext context, String email, String password) {
-    return Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FutureBuilder(
-          future:
-              context.read<AuthProvider>().handleEmailSignIn(email, password),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              switch (context.read<AuthProvider>().status) {
-                case Status.authenticated:
-                  return const HomeScreen();
-                case Status.approvalRequired:
-                  Fluttertoast.showToast(
-                    msg: 'Your account is awaiting approval',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                  break;
-                default:
-                  Fluttertoast.showToast(
-                    msg: 'An error occurred',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                  break;
-              }
-              return const LoginScreen();
-            } else {
-              return FutureBuilder(
-                future: Connectivity().checkConnectivity(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return const LoadingScreen();
-                  } else {
-                    return const AlertDialog(
-                      icon: Icon(Icons.error),
-                      iconColor: Colors.red,
-                      title: Text('No Internet Connection'),
-                      content: Text('Please check your internet connection'),
-                    );
-                  }
-                },
-              );
-            }
-          },
-        ),
-      ),
-      (route) => false,
     );
   }
 }

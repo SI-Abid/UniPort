@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uniport/version_1/providers/auth_controller.dart';
 
 // ignore: must_be_immutable
-class CustomCheckBox extends StatefulWidget {
+class CustomCheckBox extends ConsumerStatefulWidget {
   CustomCheckBox({super.key, required this.text});
 
   final String text;
@@ -9,10 +11,10 @@ class CustomCheckBox extends StatefulWidget {
   bool get isChecked => _isChecked;
 
   @override
-  State<CustomCheckBox> createState() => _CustomCheckBoxState();
+  ConsumerState<CustomCheckBox> createState() => _CustomCheckBoxState();
 }
 
-class _CustomCheckBoxState extends State<CustomCheckBox> {
+class _CustomCheckBoxState extends ConsumerState<CustomCheckBox> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -30,6 +32,9 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
           onChanged: (value) {
             setState(() {
               widget._isChecked = value!;
+              ref.read(authControllerProvider).createUser(context, data: {
+                'isHod': widget.isChecked,
+              });
             });
           },
         ),

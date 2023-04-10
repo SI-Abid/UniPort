@@ -1,11 +1,10 @@
 export 'academic_info_reg.dart';
 export 'assign_advisor.dart';
-export 'assigned_batch_screen.dart';
+export 'assigned_group_screen.dart';
 export 'chat_screen.dart';
 export 'contact_screen.dart';
 export 'email_verify_screen.dart';
 export 'group_chat_screen.dart';
-export 'group_chat_student.dart';
 export 'home_screen.dart';
 export 'loading_screen.dart';
 export 'login_screen.dart';
@@ -20,3 +19,4 @@ export 'student_approval.dart';
 export 'teacher_approval.dart';
 export 'user_search.dart';
 export 'welcome_page_screen.dart';
+export 'no_screen.dart';

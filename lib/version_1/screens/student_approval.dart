@@ -7,6 +7,7 @@ import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
 class StudentApproval extends StatefulWidget {
+  static const String routeName = '/student-approval';
   const StudentApproval({super.key});
 
   @override

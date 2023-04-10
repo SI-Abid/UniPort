@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'package:uniport/version_1/providers/auth_provider.dart';
 
-import '../screens/screens.dart';
+import '../providers/auth_controller.dart';
 
-class GoogleLoginButton extends StatelessWidget {
+class GoogleLoginButton extends ConsumerStatefulWidget {
   const GoogleLoginButton({super.key});
 
+  @override
+  ConsumerState<GoogleLoginButton> createState() => _GoogleLoginButtonState();
+}
+
+class _GoogleLoginButtonState extends ConsumerState<GoogleLoginButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -26,35 +29,7 @@ class GoogleLoginButton extends StatelessWidget {
             ),
           ),
         ),
-        onPressed: () => {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FutureBuilder(
-                future: context.read<AuthProvider>().handleGoogleSignIn(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData && snapshot.data == true) {
-                      return const HomeScreen();
-                    } else {
-                      Fluttertoast.showToast(
-                        msg: 'Login Failed',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                    }
-                  }
-                  return const LoadingScreen();
-                },
-              ),
-            ),
-            (route) => false,
-          ),
-        },
+        onPressed: () => ref.read(authControllerProvider).signInWithGoogle(context),
         child: SvgPicture.asset(
           alignment: Alignment.bottomCenter,
           'assets/images/logo_google_icon.svg',

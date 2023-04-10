@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/widgets.dart';
 
 class LoginScreen extends StatelessWidget {
+  static const String routeName = '/login';
   const LoginScreen({super.key});
 
   @override
@@ -17,9 +18,9 @@ class LoginScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const LoginHeader(),
-              const SizedBox(height: 40),
+            children: const <Widget>[
+              LoginHeader(),
+              SizedBox(height: 40),
               LoginBody(),
             ],
           ),

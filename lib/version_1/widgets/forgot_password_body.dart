@@ -1,7 +1,9 @@
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uniport/version_1/providers/otp_controller.dart';
 
-import '../services/callback_function.dart';
 import '../widgets/widgets.dart';
 
 class ForgotPasswordBody extends StatelessWidget {
@@ -32,9 +34,14 @@ class ForgotPasswordBody extends StatelessWidget {
             // Email Text Field
             CustomTextField(controller: emailController),
 
-            ActionButton(
-              text: 'Send OTP',
-              onPressed: () => onOtpRequest(emailController.text),
+            Consumer(
+              builder: (context, ref, child) => ActionButton(
+                  text: 'Send OTP',
+                  onPressed: () {
+                    ref
+                        .read(otpControllerProvider)
+                        .sendOtp(context, email: emailController.text.trim());
+                  }),
             ),
 
             // timer

@@ -6,6 +6,7 @@ import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
 class ReportViewScreen extends StatelessWidget {
+  static const String routeName = '/report-view';
   const ReportViewScreen({super.key});
   @override
   Widget build(BuildContext context) {
@@ -202,6 +203,8 @@ class ReportViewScreen extends StatelessWidget {
 }
 
 class StudentReportScreen extends StatelessWidget {
+  static const String routeName = '/student-report';
+  
   StudentReportScreen({super.key});
 
   final titleController = TextEditingController();

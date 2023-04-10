@@ -16,7 +16,7 @@ class ForgotPasswordText extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const EmailVerifyScreen()));
+                  builder: (context) => const ForgetPasswordScreen()));
         },
         child: Text(
           'Forgot your password?',

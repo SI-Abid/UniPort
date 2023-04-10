@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/widgets.dart';
 
 class WelcomePageScreen extends StatefulWidget {
+  static const String routeName = '/welcome';
   const WelcomePageScreen({super.key});
 
   @override
@@ -15,7 +17,15 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
   @override
   void initState() {
     super.initState();
-    navigateToNextScreen();
+    SharedPreferences.getInstance().then((prefs) {
+      final flag = prefs.getBool('isFirstTime')??true;
+      if (flag) {
+        prefs.setBool('isFirstTime', false);
+        navigateToNextScreen();
+      } else {
+        Navigator.pop(context);
+      }
+    });
   }
 
   void navigateToNextScreen() {

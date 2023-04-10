@@ -40,7 +40,7 @@ class ProfileCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Avatar(messageSender: messageSender, size: 80),
+            Avatar(user: messageSender, size: 80),
             const SizedBox(
               height: 20,
             ),

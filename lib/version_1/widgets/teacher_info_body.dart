@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'package:uniport/version_1/providers/auth_controller.dart';
 
 import '../providers/providers.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
-class TeacherInfoBody extends StatefulWidget {
+class TeacherInfoBody extends ConsumerStatefulWidget {
   const TeacherInfoBody({super.key});
 
   @override
-  State<TeacherInfoBody> createState() => _TeacherInfoBodyState();
+  ConsumerState<TeacherInfoBody> createState() => _TeacherInfoBodyState();
 }
 
-class _TeacherInfoBodyState extends State<TeacherInfoBody> {
+class _TeacherInfoBodyState extends ConsumerState<TeacherInfoBody> {
   final tIdController = TextEditingController();
 
   final intialController = TextEditingController();
@@ -81,19 +82,13 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                     return;
                   }
                   formKey.currentState!.save();
-                  String tid = tIdController.text.trim();
-                  String initial = intialController.text.trim().toUpperCase();
-                  context.read<AuthProvider>().setData(
-                        teacherId: tid,
-                        initials: initial,
-                      );
-                  debugPrint('Teacher page: ', wrapWidth: 1024);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SetPasswordRegScreen(),
-                    ),
-                  );
+                  final data = {
+                    'teacherId': tIdController.text.trim(),
+                    'initial': intialController.text.trim().toUpperCase(),
+                  };
+                  ref
+                      .read(authControllerProvider)
+                      .createUser(context, data: data);
                 },
               ),
             ],
@@ -179,8 +174,9 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) =>
-            context.read<AuthProvider>().setData(designation: value.toString()),
+        onChanged: (value) => ref
+            .read(authControllerProvider)
+            .createUser(context, data: {'designation': value}),
       ),
     );
   }
@@ -270,8 +266,9 @@ class _TeacherInfoBodyState extends State<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) =>
-            context.read<AuthProvider>().setData(department: value.toString()),
+        onChanged: (value) => ref
+            .read(authControllerProvider)
+            .createUser(context, data: {'department': value}),
       ),
     );
   }

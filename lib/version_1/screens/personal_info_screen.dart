@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:uniport/version_1/models/models.dart';
-import 'package:uniport/version_1/providers/providers.dart';
+import 'package:uniport/version_1/providers/auth_controller.dart';
 
 import '../services/helper.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class PersonalInfoScreen extends StatelessWidget {
+  static const String routeName = '/personal-info';
   const PersonalInfoScreen({Key? key}) : super(key: key);
 
   @override
@@ -73,8 +71,6 @@ class PersonalInfoBody extends StatefulWidget {
 }
 
 class _PersonalInfoBodyState extends State<PersonalInfoBody> {
-  final emailController = TextEditingController();
-
   final fNameController = TextEditingController();
 
   final lNameController = TextEditingController();
@@ -138,30 +134,26 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
               const SizedBox(height: 10),
 
               // Next Button
-              ActionButton(
-                text: 'NEXT',
-                onPressed: () {
-                  if (formKey.currentState!.validate() == false) {
-                    return;
-                  }
-                  formKey.currentState!.save();
-                  String fname = fNameController.text.trim();
-                  String lname = lNameController.text.trim();
-                  String std = phoneController.text.trim();
-                  context.read<AuthProvider>().setData(
-                        firstName: fname,
-                        lastName: lname,
-                        contact: std,
-                      );
-                  // print('Personal page: $loggedInUser');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AcademicInfoRegScreen(),
-                    ),
-                  );
-                },
-              ),
+              Consumer(builder: (context, ref, child) {
+                return ActionButton(
+                  text: 'NEXT',
+                  onPressed: () {
+                    if (formKey.currentState!.validate() == false) {
+                      return;
+                    }
+                    formKey.currentState!.save();
+                    final data = {
+                      'firstName': fNameController.text.trim(),
+                      'lastName': lNameController.text.trim(),
+                      'contact': phoneController.text.trim(),
+                    };
+                    // DONE: add navigation to the next screen
+                    ref
+                        .read(authControllerProvider)
+                        .createUser(context, data: data);
+                  },
+                );
+              }),
             ],
           ),
         ),

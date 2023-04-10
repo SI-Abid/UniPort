@@ -42,17 +42,6 @@ class LocalNotification {
     return await messaging.getToken();
   }
 
-  static void listenForTokenRefresh() {
-    messaging.getToken().then((token) {
-      if (token != loggedInUser.pushToken) {
-        loggedInUser.updatePushToken(token!);
-      }
-    });
-    messaging.onTokenRefresh.listen((token) {
-      loggedInUser.updatePushToken(token);
-    });
-  }
-
   static Future<void> initialize() async {
     await requestNotificationPermission();
     const AndroidInitializationSettings initializationSettingsAndroid =

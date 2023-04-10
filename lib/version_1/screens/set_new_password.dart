@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/providers/otp_controller.dart';
 
-import '../services/callback_function.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class SetNewPasswordScreen extends StatefulWidget {
-  const SetNewPasswordScreen({Key? key, required this.email}) : super(key: key);
-  final String email;
+  static const routeName = '/setNewPassword';
+
+  const SetNewPasswordScreen({super.key});
   @override
   State<SetNewPasswordScreen> createState() => _SetNewPasswordScreenState();
 }
@@ -39,10 +40,10 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: Column(
               //mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const SetNewPasswordHeader(),
-                const SizedBox(height: 40),
-                SetNewPasswordBody(email: widget.email),
+              children: const <Widget>[
+                SetNewPasswordHeader(),
+                SizedBox(height: 40),
+                SetNewPasswordBody(),
               ],
             ),
           ),
@@ -114,8 +115,7 @@ class SetNewPasswordHeader extends StatelessWidget {
 }
 
 class SetNewPasswordBody extends StatefulWidget {
-  const SetNewPasswordBody({super.key, required this.email});
-  final String email;
+  const SetNewPasswordBody({super.key});
 
   @override
   State<SetNewPasswordBody> createState() => _SetNewPasswordBodyState();
@@ -154,45 +154,38 @@ class _SetNewPasswordBodyState extends State<SetNewPasswordBody> {
               controller: confirmPassController,
               hintText: 'Confirm Password',
             ),
-            ActionButton(
-              text: 'CONFIRM',
-              onPressed: () {
-                if (passwordController.text.isEmpty ||
-                    confirmPassController.text.isEmpty) {
-                  Fluttertoast.showToast(
-                    msg: 'Please fill all the fields',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                } else if (passwordController.text !=
-                    confirmPassController.text) {
-                  Fluttertoast.showToast(
-                    msg: 'Password does not match',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                } else {
-                  onPasswordReset(widget.email, passwordController.text).then(
-                    (value) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                  );
-                }
-              },
+            Consumer(
+              builder: (context, ref, child) => ActionButton(
+                text: 'CONFIRM',
+                onPressed: () {
+                  if (passwordController.text.isEmpty ||
+                      confirmPassController.text.isEmpty) {
+                    Fluttertoast.showToast(
+                      msg: 'Please fill all the fields',
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                  } else if (passwordController.text !=
+                      confirmPassController.text) {
+                    Fluttertoast.showToast(
+                      msg: 'Password does not match',
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                  } else {
+                    ref.read(otpControllerProvider).setPassword(context,
+                        password: passwordController.text.trim());
+                  }
+                },
+              ),
             ),
           ],
         ),

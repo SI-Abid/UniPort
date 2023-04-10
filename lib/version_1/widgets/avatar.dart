@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 
 class Avatar extends StatelessWidget {
-  const Avatar({super.key, this.messageSender, this.size = 20});
+  const Avatar({super.key, this.user, this.size = 20});
   final double size;
-  final UserModel? messageSender;
+  final UserModel? user;
 
   @override
   Widget build(BuildContext context) {
@@ -15,21 +15,20 @@ class Avatar extends StatelessWidget {
       width: size * 2,
       decoration: BoxDecoration(
         border: Border.all(
-          color:
-              messageSender?.usertype == 'student' ? Colors.green : Colors.blue,
+          color: user?.usertype == 'student' ? Colors.green : Colors.blue,
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(size * 2),
       ),
-      child: messageSender?.photoUrl == null
+      child: user?.photoUrl == null
           ? CircleAvatar(
               radius: size,
               backgroundColor: Colors.brown.shade800,
-              child: Text(messageSender!.name[0].toUpperCase()))
+              child: Text(user!.name[0].toUpperCase()))
           : SizedBox(
-            height: size * 2,
-            width: size * 2,
-            child: CachedNetworkImage(imageUrl: messageSender!.photoUrl!)),
+              height: size * 2,
+              width: size * 2,
+              child: CachedNetworkImage(imageUrl: user!.photoUrl!)),
     );
   }
 }

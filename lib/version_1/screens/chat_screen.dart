@@ -1,23 +1,19 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:uniport/version_1/providers/providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uniport/version_1/models/last_message.dart';
+import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/providers/chat_controller.dart';
 
 import '../models/models.dart';
-import '../services/helper.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends ConsumerWidget {
+  static const routeName = '/chat';
   const ChatScreen({Key? key}) : super(key: key);
   @override
-  Widget build(BuildContext context) {
-    final chatProvider = context.watch<ChatProvider>();
-    final user = chatProvider.user;
-    final chats = chatProvider.chatList;
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const AppTitle(title: 'CHAT'),
@@ -26,7 +22,16 @@ class ChatScreen extends StatelessWidget {
         actions: [
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Avatar(messageSender: user, size: 22),
+            child: ref.watch(userAuthProvider).when(
+                  data: (user) => user != null
+                      ? Avatar(
+                          user: user,
+                          size: 22,
+                        )
+                      : const SizedBox(),
+                  loading: () => const SizedBox(),
+                  error: (error, stack) => const SizedBox(),
+                ),
           ),
         ],
         backgroundColor: Colors.transparent,
@@ -37,26 +42,31 @@ class ChatScreen extends StatelessWidget {
         width: double.infinity,
         child: SizedBox(
           width: 500,
-          child: ListView.separated(
-            physics: const BouncingScrollPhysics(),
-            separatorBuilder: (context, index) => const SizedBox(
-              height: 6,
-            ),
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              List users = chats[index]['members'] as List;
-              users.removeWhere((element) => element == user.uid);
-              String senderId = users.first;
-              UserModel sender =
-                  chatProvider.getUser(senderId);
-              Message lastMessage =
-                  Message.fromJson(chats[index]['lastMessage']);
-              return ChatTile(
-                lastMsg: lastMessage,
-                messageSender: sender,
-              );
-            },
-          ),
+          child: StreamBuilder<List<LastMessage>>(
+              stream: ref.watch(chatControllerProvider).lastMessageStream(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: Text('No chats yet'),
+                  );
+                }
+                List<LastMessage> chats = snapshot.data!;
+                return ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  separatorBuilder: (context, index) => const SizedBox(
+                    height: 6,
+                  ),
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    Message msg = chats[index].message;
+                    UserModel sender = chats[index].sender;
+                    return ChatTile(
+                      message: msg,
+                      messageSender: sender,
+                    );
+                  },
+                );
+              }),
         ),
       ),
       backgroundColor: const Color(0xfff5f5f5),

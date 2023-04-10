@@ -1,20 +1,20 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uniport/version_1/providers/chat_controller.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
-import '../services/providers.dart';
 import '../widgets/widgets.dart';
 
 class GroupChatScreen extends StatefulWidget {
+  static const String routeName = '/group_chat_screen';
   const GroupChatScreen(
       {super.key, required this.groupId, required this.title});
   final String groupId;
@@ -25,178 +25,131 @@ class GroupChatScreen extends StatefulWidget {
 }
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-
-  late List<QueryDocumentSnapshot> messages;
-  int _limit = 20;
-  final int _limitIncrement = 20;
-  bool _showEmoji = false;
-  final _focusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    messages = [];
-    _scrollController.addListener(_scrollListener);
-  }
-
-  _scrollListener() {
-    if (!_scrollController.hasClients) return;
-    if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange &&
-        _limit <= messages.length) {
-      setState(() {
-        _limit += _limitIncrement;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: AppTitle(title: 'Advisor ${widget.title}'),
-        leadingWidth: 24,
-        iconTheme: IconThemeData(color: Colors.teal.shade800),
-        backgroundColor: const Color(0xaaf3f3f3),
+        toolbarHeight: 35,
         elevation: 0,
+        backgroundColor: Colors.white.withOpacity(0),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: ColorConstant.teal700,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          widget.title,
+          style: GoogleFonts.sen(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.black.withOpacity(0.5),
+          ),
+        ),
         actions: [
-          // more_vert
-          PopupMenuButton(
-            onOpened: () {
-              FocusScope.of(context).unfocus();
-            },
+          IconButton(
             icon: Icon(
               Icons.more_vert,
-              color: Colors.teal.shade800,
+              color: ColorConstant.teal700,
             ),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
-                    .copyWith(topRight: const Radius.circular(0))),
-            padding: const EdgeInsets.all(10),
-            elevation: 10,
-            color: Colors.grey.shade200,
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 1,
-                child: Text('View Info'),
-              ),
-              if (loggedInUser.usertype == 'teacher')
-                const PopupMenuItem(
-                  value: 2,
-                  child: Text('Delete Group'),
-                ),
-            ],
-            onSelected: (value) {
-              if (value == 1) {
-              } else if (value == 2) {
-                FirebaseFirestore.instance
-                    .collection('advisor groups')
-                    .doc(widget.groupId)
-                    .delete();
-                FirebaseStorage.instance
-                    .ref()
-                    .child('images/${widget.groupId}')
-                    .delete();
-              }
-            },
+            onPressed: () {},
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-        ),
-        // margin: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('advisor groups')
-                  .doc(widget.groupId)
-                  .collection('messages')
-                  .orderBy('createdAt', descending: true)
-                  .limit(_limit)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData == false) {
-                  return const SizedBox.shrink();
-                }
-                messages = snapshot.data!.docs;
-                return Expanded(
-                  child: ListView.builder(
-                    reverse: true,
-                    controller: _scrollController,
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = Message.fromJson(
-                          messages[index].data() as Map<String, dynamic>);
-                      return FutureBuilder(
-                        future: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(message.sender)
-                            .get(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData == false) {
-                            return const SizedBox.shrink();
-                          }
-                          final user = UserModel.fromJson(
-                              snapshot.data!.data() as Map<String, dynamic>);
-                          return GroupMessageTile(
-                              message: message, sender: user);
-                        },
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-            _chatInput(context),
-            if (_showEmoji)
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
-                child: EmojiPicker(
-                  onBackspacePressed: () => setState(() {
-                    if (_controller.text.isNotEmpty) {
-                      _controller.text = _controller.text.characters
-                          .toList()
-                          .map((e) => e.toString())
-                          .toList()
-                          .sublist(0, _controller.text.characters.length)
-                          .join();
-                    }
-                  }),
-                  textEditingController: _controller,
-                  config: Config(
-                    emojiTextStyle: GoogleFonts.sen(
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
-                    checkPlatformCompatibility: true,
-                    backspaceColor: Colors.blueGrey.shade900,
-                    enableSkinTones: true,
-                    indicatorColor: Colors.teal.shade400,
-                    iconColorSelected: Colors.teal.shade400,
-                    buttonMode: ButtonMode.MATERIAL,
-                    iconColor: Colors.teal.shade800,
-                    bgColor: Colors.green.shade200,
-                    columns: 8,
-                    emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                  ),
-                ),
-              ),
-          ],
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: GroupChatBody(groupId: widget.groupId),
+          ),
         ),
       ),
     );
   }
+}
 
-  Padding _chatInput(BuildContext context) {
+class GroupChatBody extends ConsumerStatefulWidget {
+  const GroupChatBody({super.key, required this.groupId});
+  final String groupId;
+
+  @override
+  ConsumerState<GroupChatBody> createState() => _GroupChatBodyState();
+}
+
+class _GroupChatBodyState extends ConsumerState<GroupChatBody> {
+  bool _showEmoji = false;
+  final TextEditingController _controller = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
     final mq = MediaQuery.of(context).size;
+    return Column(
+      children: [
+        Expanded(
+          child: StreamBuilder<List<GroupMessage>>(
+            stream: ref
+                .watch(chatControllerProvider)
+                .groupChatStream(groupId: widget.groupId),
+            builder: (context, snapshot) {
+              if (snapshot.hasData == false) {
+                return const Center(child: Text('No messages yet'));
+              }
+              final messages = snapshot.data!;
+              return ListView.builder(
+                reverse: true,
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  return GroupMessageTile(
+                    sender: messages[index].sender,
+                    message: messages[index].message,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        _chatInput(MediaQuery.of(context).size, context, ref),
+        if (_showEmoji)
+          SizedBox(
+            height: mq.height * .35,
+            child: EmojiPicker(
+              onBackspacePressed: () => setState(() {
+                if (_controller.text.isNotEmpty) {
+                  _controller.text = _controller.text.characters
+                      .toList()
+                      .map((e) => e.toString())
+                      .toList()
+                      .sublist(0, _controller.text.characters.length)
+                      .join();
+                }
+              }),
+              textEditingController: _controller,
+              config: Config(
+                emojiTextStyle: GoogleFonts.sen(
+                  fontSize: 20,
+                  color: Colors.black,
+                ),
+                checkPlatformCompatibility: true,
+                backspaceColor: Colors.blueGrey.shade900,
+                enableSkinTones: true,
+                indicatorColor: Colors.teal.shade400,
+                iconColorSelected: Colors.teal.shade400,
+                buttonMode: ButtonMode.MATERIAL,
+                iconColor: Colors.teal.shade800,
+                bgColor: Colors.green.shade200,
+                columns: 8,
+                emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+              ),
+            ),
+          )
+      ],
+    );
+  }
+
+  Padding _chatInput(Size mq, BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: mq.width * 0.01),
       child: Row(
@@ -214,25 +167,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   IconButton(
                     iconSize: 28,
                     icon: Icon(
-                      _showEmoji ? Icons.keyboard : Icons.emoji_emotions,
+                      Icons.emoji_emotions,
                       color: Colors.teal.shade800,
                     ),
                     onPressed: () {
-                      if (_showEmoji) {
-                        setState(() => _showEmoji = false);
-                        FocusScope.of(context).requestFocus(_focusNode);
-                      } else {
+                      setState(() {
                         FocusScope.of(context).unfocus();
-                        Future.delayed(const Duration(milliseconds: 200), () {
-                          setState(() => _showEmoji = true);
-                        });
-                      }
+                        _showEmoji = !_showEmoji;
+                      });
                     },
                   ),
                   Expanded(
                     child: TextField(
-                      autofocus: true,
-                      focusNode: _focusNode,
                       textCapitalization: TextCapitalization.sentences,
                       autocorrect: true,
                       enableSuggestions: true,
@@ -244,12 +190,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         setState(() {
                           _showEmoji = false;
                         });
-                        FocusScope.of(context).requestFocus(_focusNode);
-                        if (_scrollController.hasClients) {
-                          _scrollController.animateTo(0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut);
-                        }
                       },
                       controller: _controller,
                       decoration: const InputDecoration(
@@ -271,9 +211,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       // uploading & sending image one by one
                       for (var i in images) {
                         debugPrint('Image Path: ${i.path}');
-                        // setState(() => _isUploading = true);
-                        await sendChatImage(widget.groupId, File(i.path));
-                        // setState(() => _isUploading = false);
+                        // DONE: send image to group chat
+                        ref.read(chatControllerProvider).sendGroupImage(
+                            groupId: widget.groupId, path: i.path);
                       }
                     },
                     icon: Icon(
@@ -292,10 +232,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           source: ImageSource.camera, imageQuality: 70);
                       if (image != null) {
                         debugPrint('Image Path: ${image.path}');
-                        // setState(() => _isUploading = true);
-
-                        await sendChatImage(widget.groupId, File(image.path));
-                        // setState(() => _isUploading = false);
+                        // DONE: send image to group chat
+                        ref.read(chatControllerProvider).sendGroupImage(
+                            groupId: widget.groupId, path: image.path);
                       }
                     },
                     icon: Icon(
@@ -318,20 +257,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               onPressed: () {
                 String message = _controller.text.trim();
                 if (message.isNotEmpty) {
-                  Message msg = Message(
-                    sender: loggedInUser.uid,
-                    content: message,
-                    createdAt: DateTime.now().millisecondsSinceEpoch,
-                    type: MessageType.text,
-                  );
-                  loggedInUser.sendMessageToGroup(widget.groupId, msg);
-                  _controller.clear();
-                  if (_scrollController.hasClients) {
-                    _scrollController.animateTo(0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut);
-                  }
+                  // DONE: send message to group chat
+                  ref
+                      .read(chatControllerProvider)
+                      .sendGroupMessage(groupId: widget.groupId, text: message);
                 }
+                _controller.clear();
               },
               color: Colors.teal.shade800,
               child: const Icon(
@@ -345,35 +276,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ),
     );
   }
-
-  // send image message
-  Future<void> sendChatImage(String groupId, File file) async {
-    //getting image file extension
-    final ext = file.path.split('.').last;
-
-    //storage file ref with path
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('images/$groupId/${DateTime.now().millisecondsSinceEpoch}.$ext');
-
-    //uploading image
-    await ref
-        .putFile(file, SettableMetadata(contentType: 'image/$ext'))
-        .then((taskSnapshot) {
-      debugPrint(
-          'Data Transferred: ${taskSnapshot.bytesTransferred / 1024} kb');
-    });
-
-    //updating image in firestore database
-    final imageUrl = await ref.getDownloadURL();
-    final message = Message(
-      content: imageUrl,
-      sender: loggedInUser.uid,
-      type: MessageType.image,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    );
-    loggedInUser.sendMessageToGroup(groupId, message);
-  }
 }
 
 class GroupMessageTile extends StatelessWidget {
@@ -383,7 +285,7 @@ class GroupMessageTile extends StatelessWidget {
   final UserModel sender;
   @override
   Widget build(BuildContext context) {
-    final isMe = message.sender == loggedInUser.uid;
+    final isMe = message.sender == sender.uid;
     return Container(
       padding: EdgeInsets.only(
         top: 4,
@@ -404,7 +306,7 @@ class GroupMessageTile extends StatelessWidget {
               children: [
                 Container(
                   margin: const EdgeInsets.only(right: 8),
-                  child: Avatar(messageSender: sender, size: 12),
+                  child: Avatar(user: sender, size: 12),
                 ),
                 // const SizedBox(width: 4),
                 Text(

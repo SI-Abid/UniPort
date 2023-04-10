@@ -1,20 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/models/batch_model.dart';
+import 'package:uniport/version_1/providers/chat_controller.dart';
 
 import '../models/models.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
 
-class AssignAdvisor extends StatefulWidget {
+class AssignAdvisor extends ConsumerStatefulWidget {
+  static const String routeName = '/assign-advisor';
   const AssignAdvisor({super.key});
   @override
-  State<AssignAdvisor> createState() => _AssignAdvisorState();
+  ConsumerState<AssignAdvisor> createState() => _AssignAdvisorState();
 }
 
-class _AssignAdvisorState extends State<AssignAdvisor> {
-  late List<Map<String, dynamic>> batchInfoList;
+class _AssignAdvisorState extends ConsumerState<AssignAdvisor> {
+  late List<BatchModel> batchList;
   bool isLoading = true;
   List<String> selectedSection = [];
   List<UserModel> teacherList = [];
@@ -24,20 +28,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance.collection('batchInfo').get().then((value) {
-      batchInfoList = value.docs.map((e) => e.data()).toList();
-      batchInfoList.sort((a, b) => a['batch'].compareTo(b['batch']));
-    }).then((value) => FirebaseFirestore.instance
-            .collection('users')
-            .where('userType', isEqualTo: 'teacher')
-            .where('approved', isEqualTo: true)
-            .get()
-            .then((value) {
-          teacherList =
-              value.docs.map((e) => UserModel.fromJson(e.data())).toList();
-          // print(teacherList);
-          setState(() {});
-        }));
+    
   }
 
   @override
@@ -89,21 +80,34 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                                 color: const Color.fromARGB(255, 24, 143, 121),
                               ),
                             ),
-                            items: batchInfoList.map((batchInfo) {
-                              return DropdownMenuItem(
-                                value: batchInfo['batch'],
-                                child: Text(
-                                  batchInfo['batch'],
-                                  style: GoogleFonts.sen(
-                                    letterSpacing: 0.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.normal,
-                                    color:
-                                        const Color.fromARGB(255, 24, 143, 121),
+                            items: ref.watch(batchProvider).when(data: (data) {
+                              batchList = data;
+                              return batchList.map((batch) {
+                                return DropdownMenuItem(
+                                  value: batch.batch,
+                                  child: Text(
+                                    batch.batch,
+                                    style: GoogleFonts.sen(
+                                      letterSpacing: 0.5,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.normal,
+                                      color: const Color.fromARGB(
+                                          255, 24, 143, 121),
+                                    ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
+                                );
+                              }).toList();
+                            }, loading: () {
+                              return const [
+                                DropdownMenuItem(
+                                  value: null,
+                                  enabled: false,
+                                  child: Text('Loading...'),
+                                )
+                              ];
+                            }, error: (error, stack) {
+                              return const [];
+                            }),
                             style: GoogleFonts.sen(
                               letterSpacing: 0.5,
                               fontSize: 18,
@@ -116,8 +120,8 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
                                 if (value != selectedBatch) {
                                   selectedSection.clear();
                                 }
-                                selectedBatchIndex = batchInfoList.indexWhere(
-                                    (element) => element['batch'] == value);
+                                selectedBatchIndex = batchList
+                                    .indexWhere((batch) => batch.batch == value);
                                 selectedBatch = value as String;
                               });
                             },
@@ -382,20 +386,33 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
               color: const Color.fromARGB(255, 24, 143, 121),
             ),
           ),
-          items: teacherList.map((teacher) {
-            return DropdownMenuItem(
-              value: teacher,
-              child: Text(
-                '${teacher.initials}, ${teacher.name}',
-                style: GoogleFonts.sen(
-                  letterSpacing: 0.5,
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                  color: const Color.fromARGB(255, 24, 143, 121),
+          items: ref.watch(teacherProvider).when(
+            data: (teachers) {
+            return teachers.map((teacher) {
+              return DropdownMenuItem<UserModel>(
+                value: teacher,
+                child: Text(
+                  teacher.name,
+                  style: GoogleFonts.sen(
+                    letterSpacing: 0.5,
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                    color: const Color.fromARGB(255, 24, 143, 121),
+                  ),
                 ),
+              );
+            }).toList();
+          }, loading: () {
+            return const [
+              DropdownMenuItem(
+                value: null,
+                enabled: false,
+                child: Text('Loading...'),
               ),
-            );
-          }).toList(),
+            ];
+          }, error: (e, s) {
+            return const [];
+          }),
           style: GoogleFonts.sen(
             letterSpacing: 0.5,
             fontSize: 18,
@@ -449,7 +466,7 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
           ),
           onChanged: (value) {
             setState(() {
-              selectedTeacher = value;
+              selectedTeacher = value as UserModel;
             });
           },
         ),
@@ -460,12 +477,12 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
   List<Widget> getSectionChips() {
     List<Widget> sectionChips = [];
     for (int i = 0;
-        i < batchInfoList[selectedBatchIndex]['sections'].length;
+        i < batchList[selectedBatchIndex].sections.length;
         i++) {
       sectionChips.add(
         FilterChip(
           label: Text(
-            batchInfoList[selectedBatchIndex]['sections'][i],
+            batchList[selectedBatchIndex].sections[i],
             style: GoogleFonts.sen(
               letterSpacing: 0.5,
               fontSize: 18,
@@ -474,16 +491,16 @@ class _AssignAdvisorState extends State<AssignAdvisor> {
             ),
           ),
           selected: selectedSection
-              .contains(batchInfoList[selectedBatchIndex]['sections'][i]),
+              .contains(batchList[selectedBatchIndex].sections[i]),
           onSelected: (value) {
             setState(
               () {
                 if (value) {
                   selectedSection
-                      .add(batchInfoList[selectedBatchIndex]['sections'][i]);
+                      .add(batchList[selectedBatchIndex].sections[i]);
                 } else {
                   selectedSection
-                      .remove(batchInfoList[selectedBatchIndex]['sections'][i]);
+                      .remove(batchList[selectedBatchIndex].sections[i]);
                 }
               },
             );

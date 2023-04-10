@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,31 +11,30 @@ import 'package:pinch_zoom/pinch_zoom.dart';
 import '../models/models.dart';
 import '../services/helper.dart';
 
-class MessageTile extends StatelessWidget {
+class MessageTile extends ConsumerWidget {
   const MessageTile(
       {super.key,
       required this.message,
       required this.isMe,
-      required this.chatId,
+      // required this.chatId,
       this.nextMsg,
       required this.isLast,
       this.prevMsg});
   final Message message;
   final bool isMe;
-  final String chatId;
+  // final String chatId;
   final Message? nextMsg;
   final Message? prevMsg;
   final bool isLast;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (!isMe && message.readAt == null) {
-      message.markAsRead(chatId);
+      // message.markAsRead(chatId);
+      // TODO: mark as read
     }
     bool isLeading = message.sender != prevMsg?.sender ||
         formatTime(message.createdAt) != formatTime(prevMsg?.createdAt ?? 0);
-    //  &&
-    //     message.sender == (nextMsg?.sender ?? message.sender);
-    // bool isSingle =  && nextMsg==null;
+
     return Container(
       padding: EdgeInsets.only(
         top: 2,
@@ -51,7 +51,7 @@ class MessageTile extends StatelessWidget {
           GestureDetector(
             onLongPress: () {
               // text copy to clipboard
-              _getMessageAction(context);
+              _getMessageAction(context, ref);
             },
             child: message.type == MessageType.text
                 ? Container(
@@ -207,7 +207,7 @@ class MessageTile extends StatelessWidget {
     );
   }
 
-  Future<dynamic> _getMessageAction(BuildContext context) {
+  Future<dynamic> _getMessageAction(BuildContext context, WidgetRef ref) {
     final mq = MediaQuery.of(context).size;
     return showModalBottomSheet(
         context: context,
@@ -297,7 +297,7 @@ class MessageTile extends StatelessWidget {
                     onTap: () {
                       //for hiding bottom sheet
                       Navigator.pop(context);
-                      _showMessageUpdateDialog(context);
+                      _showMessageUpdateDialog(context, ref);
                     }),
 
               //delete option
@@ -307,7 +307,8 @@ class MessageTile extends StatelessWidget {
                         color: Colors.red, size: 26),
                     name: 'Delete Message',
                     onTap: () async {
-                      message.delete(chatId, isLast, prevMsg);
+                      // message.delete(chatId, isLast, prevMsg);
+                      
                       Navigator.pop(context);
                     }),
 
@@ -363,7 +364,7 @@ class MessageTile extends StatelessWidget {
   }
 
   //dialog for updating message content
-  void _showMessageUpdateDialog(BuildContext context) {
+  void _showMessageUpdateDialog(BuildContext context, WidgetRef ref) {
     String updatedMsg = message.content;
 
     showDialog(
@@ -415,7 +416,8 @@ class MessageTile extends StatelessWidget {
             onPressed: () {
               //hide alert dialog
               Navigator.pop(context);
-              message.update(updatedMsg, chatId, isLast);
+              // message.update(updatedMsg, chatId, isLast);
+              // TODO: update message
             },
             child: const Text(
               'Update',
