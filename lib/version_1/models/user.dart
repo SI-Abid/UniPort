@@ -1,19 +1,15 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart';
-import 'package:uniport/version_1/services/notification_service.dart';
-
-import '../services/helper.dart';
-import '../services/providers.dart';
-import 'message.dart';
+enum Status {
+  loggedIn,
+  loggedOut,
+  newUser,
+  notApproved,
+  personalInfoDone,
+  academicInfoDone,
+  registrationDone,
+}
 
 class UserModel {
+  Status status = Status.loggedOut;
   // common data
   String? usertype;
   bool? approved;
@@ -34,8 +30,6 @@ class UserModel {
   String? studentId;
   String? section;
   String? batch;
-  // app data
-  String? openedChatId;
   UserModel({
     this.uid = '',
     this.usertype = 'student',
@@ -132,81 +126,3 @@ class UserModel {
     return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod, pushToken: $pushToken}';
   }
 }
-
-  // void sendMessageToUser(User toUser, Message message) {
-  //   String chatId = getChatId(toUser.uid, uid);
-  //   final docRef = _firestore.collection('chats').doc(chatId);
-  //   final msgRef =
-  //       docRef.collection('messages').doc(message.createdAt.toString());
-  //   // add message to collection and update last message
-  //   _firestore.runTransaction((transaction) async {
-  //     // docRef doesn't exist, create it
-  //     transaction.set(
-  //         docRef,
-  //         {
-  //           'lastMessage': message.toJson(),
-  //           'members': FieldValue.arrayUnion([uid, toUser.uid]),
-  //         },
-  //         SetOptions(merge: true));
-  //     transaction.set(msgRef, message.toJson());
-  //   }).then((value) => sendPushNotification(toUser, message));
-  // }
-
-  // void sendMessageToGroup(String groupId, Message message) {
-  //   final docRef = _firestore.collection('advisor groups').doc(groupId);
-  //   final msgRef =
-  //       docRef.collection('messages').doc(message.createdAt.toString());
-  //   _firestore.runTransaction((transaction) async {
-  //     transaction
-  //         .set(
-  //             docRef,
-  //             {
-  //               'members': FieldValue.arrayUnion([uid]),
-  //             },
-  //             SetOptions(merge: true))
-  //         .set(msgRef, message.toJson())
-  //         .update(docRef, {
-  //       'lastMessage': message.toJson(),
-  //     }).set(
-  //             docRef,
-  //             {
-  //               'lastMessageFrom': name,
-  //             },
-  //             SetOptions(merge: true));
-  //   });
-  // }
-
-  // Future<void> sendPushNotification(User toUser, Message message) async {
-  //   String? userToken = await _firestore
-  //       .collection('users')
-  //       .doc(toUser.uid)
-  //       .get()
-  //       .then((value) => value.data()?['pushToken']);
-  //   if (userToken == null) return;
-  //   final body = {
-  //     'to': userToken,
-  //     'notification': {
-  //       'title': name,
-  //       'body': message.type == MessageType.text ? message.content : 'Image',
-  //     },
-  //     'data': {
-  //       'type': 'chat',
-  //       'sender': uid,
-  //       'senderIcon': photoUrl,
-  //     },
-  //     'channel': 'chat',
-  //   };
-  //   final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
-  //   // print(dotenv.env['PUSH_KEY']!);
-  //   final response = await post(
-  //     url,
-  //     headers: {
-  //       HttpHeaders.contentTypeHeader: 'application/json',
-  //       HttpHeaders.authorizationHeader: dotenv.env['PUSH_KEY']!,
-  //     },
-  //     body: jsonEncode(body),
-  //   );
-  //   if (kDebugMode) {
-  //     print('Push response: ${response.body}');
-  //   }
-  // }

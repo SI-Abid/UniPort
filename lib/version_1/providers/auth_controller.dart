@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniport/version_1/models/user.dart';
 import 'package:uniport/version_1/providers/auth_repository.dart';
+
 
 final authControllerProvider = Provider((ref) {
   final authRepository = ref.watch(authRepositoryProvider);

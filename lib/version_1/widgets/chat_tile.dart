@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/services/providers.dart';
 
 import '../models/models.dart';
 import '../screens/message_screen.dart';

@@ -3,7 +3,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:uniport/version_1/models/user.dart';
 
 class Message {
-  String chatId=''; // id of the chat the message belongs to
+  String chatId = ''; // id of the chat the message belongs to
   final String content; // message content
   final String sender; // uid of the sender
   final MessageType type; // type of the message

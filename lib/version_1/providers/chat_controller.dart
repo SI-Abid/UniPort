@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uniport/version_1/models/batch_model.dart';
-import 'package:uniport/version_1/models/last_message.dart';
 import 'package:uniport/version_1/models/models.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
 import 'package:uniport/version_1/providers/chat_repository.dart';
+
+import 'user_provider.dart';
 
 final chatControllerProvider = Provider((ref) {
   final chatRepository = ref.watch(chatRepositoryProvider);
@@ -31,14 +29,13 @@ class ChatController {
   ChatController({required this.ref, required this.chatRepository});
 
   void sendMessage({required String recieverId, required String text}) {
-    ref
-        .read(userAuthProvider)
-        .whenData((value) => chatRepository.sendText(value!, recieverId, text));
+    final user = ref.read(userProvider);
+    ref.read(chatRepositoryProvider).sendText(user, recieverId, text);
   }
 
   void sendImage({required String recieverId, required String path}) {
-    ref.read(userAuthProvider).whenData(
-        (value) => chatRepository.sendImage(value!, recieverId, path));
+    final user = ref.read(userProvider);
+    ref.read(chatRepositoryProvider).sendImage(user, recieverId, path);
   }
 
   Stream<List<Message>> chatStream({required String recieverId}) {
@@ -50,10 +47,8 @@ class ChatController {
   }
 
   Stream<List<GroupLastMessage>> groupLastMessageStream() {
-    final stream = ref.read(userAuthProvider).whenData((value) {
-      return chatRepository.getGroupLastMessageStream(value!);
-    });
-    return stream.asData!.value;
+    final user = ref.read(userProvider);
+    return ref.read(chatRepositoryProvider).getGroupLastMessageStream(user);
   }
 
   Stream<List<GroupMessage>> groupChatStream({required String groupId}) {
@@ -61,13 +56,13 @@ class ChatController {
   }
 
   void sendGroupMessage({required String groupId, required String text}) {
-    ref.read(userAuthProvider).whenData(
-        (value) => chatRepository.sendGroupText(value!, groupId, text));
+    final user = ref.read(userProvider);
+    ref.read(chatRepositoryProvider).sendGroupText(user, groupId, text);
   }
 
   void sendGroupImage({required String groupId, required String path}) {
-    ref.read(userAuthProvider).whenData(
-        (value) => chatRepository.sendGroupImage(value!, groupId, path));
+    final user = ref.read(userProvider);
+    ref.read(chatRepositoryProvider).sendGroupImage(user, groupId, path);
   }
 
   void deleteMessage({required Message message, required String chatId}) {
@@ -85,5 +80,9 @@ class ChatController {
 
   Future<List<UserModel>> getTeachers() async {
     return await chatRepository.getApprovedTeachersList();
+  }
+
+  void readMessage(Message message) {
+    chatRepository.markAsRead(message);
   }
 }

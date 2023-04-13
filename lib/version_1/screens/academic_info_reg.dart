@@ -1,21 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/providers/user_provider.dart';
+import 'package:uniport/version_1/screens/set_password_reg.dart';
 
+import '../models/user.dart';
 import '../widgets/academic_info_tapbar.dart';
 import '../widgets/color_constant.dart';
 import '../widgets/student_info_body.dart';
 import '../widgets/teacher_info_body.dart';
 
-class AcademicInfoScreen extends StatefulWidget {
+class AcademicInfoScreen extends ConsumerStatefulWidget {
   static const String routeName = '/academic-info';
   const AcademicInfoScreen({Key? key}) : super(key: key);
 
   @override
-  State<AcademicInfoScreen> createState() => _AcademicInfoScreenState();
+  ConsumerState<AcademicInfoScreen> createState() => _AcademicInfoScreenState();
 }
 
-class _AcademicInfoScreenState extends State<AcademicInfoScreen> {
+class _AcademicInfoScreenState extends ConsumerState<AcademicInfoScreen> {
   String userType = "student";
+
+  @override
+  void initState() {
+    super.initState();
+    final next = ref.watch(userProvider
+        .select((value) => value.status == Status.academicInfoDone));
+    if (next) {
+      Navigator.pushNamed(context, SetPasswordScreen.routeName);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

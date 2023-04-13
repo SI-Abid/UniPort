@@ -1,4 +1,4 @@
-export 'chat.dart';
+export 'last_message.dart';
 export 'message.dart';
-export 'message_sender.dart';
 export 'user.dart';
+export 'batch_model.dart';

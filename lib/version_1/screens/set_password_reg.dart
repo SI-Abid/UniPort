@@ -2,24 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
 
+import '../models/user.dart';
+import '../providers/user_provider.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
+import 'screens.dart';
 
-class SetPasswordScreen extends StatelessWidget {
+class SetPasswordScreen extends ConsumerWidget {
   static const String routeName = '/set-password';
   const SetPasswordScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final next = ref.watch(userProvider
+        .select((value) => value.status == Status.registrationDone));
+    if (next) {
+      Navigator.pushNamedAndRemoveUntil(
+          context, LoginScreen.routeName, (route) => false);
+    }
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 35,
         elevation: 0,
         backgroundColor: Colors.white.withOpacity(0),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: ColorConstant.teal700),
+        leading: BackButton(
+          color: ColorConstant.teal700,
           onPressed: () {
             Navigator.pop(context);
           },
@@ -146,11 +154,9 @@ class _SetPasswordBodyState extends ConsumerState<SetPasswordBody> {
                     );
                     return;
                   } else {
-                    ref.read(authControllerProvider).createUser(context,
-                        data: {
-                          'password': pass,
-                        },
-                        lastStep: true);
+                    ref
+                        .read(userProvider.notifier)
+                        .registerUser(password: pass);
                   }
                 },
               ),

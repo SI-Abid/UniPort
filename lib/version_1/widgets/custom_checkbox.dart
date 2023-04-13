@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/providers/user_provider.dart';
 
 // ignore: must_be_immutable
 class CustomCheckBox extends ConsumerStatefulWidget {
@@ -32,9 +32,7 @@ class _CustomCheckBoxState extends ConsumerState<CustomCheckBox> {
           onChanged: (value) {
             setState(() {
               widget._isChecked = value!;
-              ref.read(authControllerProvider).createUser(context, data: {
-                'isHod': widget.isChecked,
-              });
+              ref.read(userProvider.notifier).setIsHod(value);
             });
           },
         ),

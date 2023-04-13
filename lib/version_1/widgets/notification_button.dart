@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationButton extends StatefulWidget {
   const NotificationButton({
@@ -30,6 +31,7 @@ class _NotificationButtonState extends State<NotificationButton> {
       onTap: () {
         setState(() {
           isBellOn = !isBellOn;
+          toggleNotificationSetting();
         });
       },
       child: Card(
@@ -42,5 +44,11 @@ class _NotificationButtonState extends State<NotificationButton> {
         ),
       ),
     );
+  }
+
+  void toggleNotificationSetting() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('isNotificationOn', isBellOn);
+    });
   }
 }

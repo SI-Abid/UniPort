@@ -2,10 +2,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uniport/router.dart';
-import 'package:uniport/version_1/screens/no_screen.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
-import 'version_1/providers/auth_controller.dart';
+import 'version_1/providers/providers.dart';
 import 'version_1/services/helper.dart';
 import 'version_1/screens/screens.dart';
 import 'version_1/models/models.dart';
@@ -26,6 +25,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(userProvider.select((value) => value.status));
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'UniPort',
@@ -35,17 +35,11 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: ref.watch(userAuthProvider).when(
-            data: (user) {
-              if (user != null) {
-                return const HomeScreen();
-              } else {
-                return const LoginScreen();
-              }
-            },
-            loading: () => const LoadingScreen(),
-            error: (error, stack) => ErrorScreen(error: error.toString()),
-          ),
+      home: status == Status.loggedIn
+          ? const HomeScreen()
+          : status == Status.newUser
+              ? const PersonalInfoScreen()
+              : const LoginScreen(),
     );
   }
 }

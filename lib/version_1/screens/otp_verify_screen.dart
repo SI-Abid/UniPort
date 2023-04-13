@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uniport/version_1/providers/otp_controller.dart';
 
-import '../providers/providers.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class OtpVerifyScreen extends StatefulWidget {
   static const routeName = '/otp-verify';
@@ -165,23 +164,43 @@ class OtpVerifyBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Text(
-              'Resend Code',
-              style: GoogleFonts.sen(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: ColorConstant.teal700,
-                decoration: TextDecoration.underline,
+            Consumer(
+              builder: (context, ref, child) => GestureDetector(
+                onTap: () {
+                  int state = ref.read(countDownProvider);
+                  if (state == 0) {
+                    ref.read(countDownProvider.notifier).startCountDown();
+                    ref
+                        .read(otpControllerProvider)
+                        .sendOtp(context, email: email);
+                  }
+                },
+                child: Text(
+                  'Resend Code',
+                  style: GoogleFonts.sen(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: ref.read(countDownProvider) == 0
+                        ? ColorConstant.teal700
+                        : Colors.grey.withOpacity(0.5),
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
             ),
             const CounterDown(),
             const SizedBox(height: 20),
-            ActionButton(
-              text: 'VERIFY',
-              onPressed: () {
-                String otp = digitControllers.map((e) => e.text).join();
-                // print('OTP Verified');
-              },
+            Consumer(
+              builder: (context, ref, child) => ActionButton(
+                text: 'VERIFY',
+                onPressed: () {
+                  String otp = digitControllers.map((e) => e.text).join();
+                  ref
+                      .read(otpControllerProvider)
+                      .verifyOtp(context, email: email, otp: otp);
+                  // print('OTP Verified');
+                },
+              ),
             ),
           ],
         ),

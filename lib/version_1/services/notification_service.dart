@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:uniport/version_1/services/helper.dart';
-import 'package:uniport/version_1/services/providers.dart';
 
 import '../models/user.dart';
 

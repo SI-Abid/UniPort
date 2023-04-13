@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTitle extends StatelessWidget {
-  const AppTitle({super.key, this.title='UNIPORT'});
+  const AppTitle({super.key, this.title = 'UNIPORT'});
 
   final String title;
   @override

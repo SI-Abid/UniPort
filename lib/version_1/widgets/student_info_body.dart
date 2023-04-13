@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uniport/version_1/models/batch_model.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/models/user.dart';
 import 'package:uniport/version_1/providers/chat_controller.dart';
+import 'package:uniport/version_1/providers/user_provider.dart';
 
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
@@ -21,6 +22,8 @@ class _StudentInfoBodyState extends ConsumerState<StudentInfoBody> {
   final sectionController = TextEditingController();
 
   final batchController = TextEditingController();
+
+  final departmentController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
   List<String> sectionItems = [];
@@ -78,16 +81,14 @@ class _StudentInfoBodyState extends ConsumerState<StudentInfoBody> {
                     return;
                   }
                   formKey.currentState!.save();
-                  final data = {
-                    'usertype': 'student',
-                    'studentId': sIdController.text.trim(),
-                    'section': sectionController.text.trim(),
-                    'batch': batchController.text.trim(),
-                  };
                   formKey.currentState!.save();
-                  ref
-                      .read(authControllerProvider)
-                      .createUser(context, data: data);
+                  ref.read(userProvider.notifier).setAcademicInfo(UserModel(
+                        usertype: 'student',
+                        studentId: sIdController.text.trim(),
+                        section: sectionController.text.trim(),
+                        batch: batchController.text.trim(),
+                        department: departmentController.text.trim(),
+                      ));
                 },
               ),
             ],
@@ -131,9 +132,8 @@ class _StudentInfoBodyState extends ConsumerState<StudentInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) =>
-            ref.read(authControllerProvider).createUser(context, data: {
-          'department': value,
+        onChanged: (value) => setState(() {
+          departmentController.text = value.toString();
         }),
       ),
     );

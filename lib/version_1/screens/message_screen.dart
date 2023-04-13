@@ -129,45 +129,43 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
           iconTheme: IconThemeData(color: Colors.teal[800]),
           actions: [
-            Consumer(
-              builder: (context, ref, child) {
-                return PopupMenuButton(
-                  onOpened: () {
-                    FocusScope.of(context).unfocus();
-                  },
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: Colors.teal.shade800,
+            Consumer(builder: (context, ref, child) {
+              return PopupMenuButton(
+                onOpened: () {
+                  FocusScope.of(context).unfocus();
+                },
+                icon: Icon(
+                  Icons.more_vert,
+                  color: Colors.teal.shade800,
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)
+                        .copyWith(topRight: const Radius.circular(0))),
+                padding: const EdgeInsets.all(10),
+                elevation: 10,
+                color: Colors.grey.shade200,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 1,
+                    child: Text('View Profile'),
                   ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)
-                          .copyWith(topRight: const Radius.circular(0))),
-                  padding: const EdgeInsets.all(10),
-                  elevation: 10,
-                  color: Colors.grey.shade200,
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 1,
-                      child: Text('View Profile'),
-                    ),
-                    const PopupMenuItem(
-                      value: 2,
-                      child: Text('Delete Chat'),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 1) {
-                      setState(() {
-                        profileViewed = true;
-                      });
-                    } else if (value == 2) {
-                      // ref.read(chatControllerProvider).deleteChat(chatId: widget.chatRoomId);
-                      unavailableFeatureToast();
-                    }
-                  },
-                );
-              }
-            ),
+                  const PopupMenuItem(
+                    value: 2,
+                    child: Text('Delete Chat'),
+                  ),
+                ],
+                onSelected: (value) {
+                  if (value == 1) {
+                    setState(() {
+                      profileViewed = true;
+                    });
+                  } else if (value == 2) {
+                    // ref.read(chatControllerProvider).deleteChat(chatId: widget.chatRoomId);
+                    unavailableFeatureToast();
+                  }
+                },
+              );
+            }),
           ],
           backgroundColor: Colors.transparent,
           elevation: 0,

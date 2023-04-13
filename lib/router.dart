@@ -55,6 +55,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case SetNewPasswordScreen.routeName:
       return MaterialPageRoute(
           builder: (context) => const SetNewPasswordScreen());
+    case GroupChatScreen.routeName:
+      final args = settings.arguments as Map<String, dynamic>;
+      final groupId = args['groupId'];
+      final title = args['title'];
+      return MaterialPageRoute(
+          builder: (context) =>
+              GroupChatScreen(groupId: groupId, title: title));
 
     default:
       return MaterialPageRoute(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/models/batch_model.dart';
 import 'package:uniport/version_1/providers/chat_controller.dart';
 
 import '../models/models.dart';
@@ -28,7 +27,6 @@ class _AssignAdvisorState extends ConsumerState<AssignAdvisor> {
   @override
   void initState() {
     super.initState();
-    
   }
 
   @override
@@ -120,8 +118,8 @@ class _AssignAdvisorState extends ConsumerState<AssignAdvisor> {
                                 if (value != selectedBatch) {
                                   selectedSection.clear();
                                 }
-                                selectedBatchIndex = batchList
-                                    .indexWhere((batch) => batch.batch == value);
+                                selectedBatchIndex = batchList.indexWhere(
+                                    (batch) => batch.batch == value);
                                 selectedBatch = value as String;
                               });
                             },
@@ -386,8 +384,7 @@ class _AssignAdvisorState extends ConsumerState<AssignAdvisor> {
               color: const Color.fromARGB(255, 24, 143, 121),
             ),
           ),
-          items: ref.watch(teacherProvider).when(
-            data: (teachers) {
+          items: ref.watch(teacherProvider).when(data: (teachers) {
             return teachers.map((teacher) {
               return DropdownMenuItem<UserModel>(
                 value: teacher,
@@ -476,9 +473,7 @@ class _AssignAdvisorState extends ConsumerState<AssignAdvisor> {
 
   List<Widget> getSectionChips() {
     List<Widget> sectionChips = [];
-    for (int i = 0;
-        i < batchList[selectedBatchIndex].sections.length;
-        i++) {
+    for (int i = 0; i < batchList[selectedBatchIndex].sections.length; i++) {
       sectionChips.add(
         FilterChip(
           label: Text(

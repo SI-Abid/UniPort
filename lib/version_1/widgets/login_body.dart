@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uniport/version_1/providers/user_provider.dart';
 
-import '../providers/auth_controller.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 import '../screens/screens.dart';
@@ -83,8 +83,9 @@ class _LoginBodyState extends ConsumerState<LoginBody> {
                     return;
                   }
                   // handle login
-                  ref.read(authControllerProvider).signInWithEmail(context,
-                      email: email, password: password);
+                  ref
+                      .read(userProvider.notifier)
+                      .loginWithEmail(email, password);
                 },
               ),
               const SizedBox(height: 5),

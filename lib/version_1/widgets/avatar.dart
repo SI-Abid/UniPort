@@ -20,15 +20,18 @@ class Avatar extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(size * 2),
       ),
-      child: user?.photoUrl == null
+      child: user!.photoUrl == null
           ? CircleAvatar(
               radius: size,
               backgroundColor: Colors.brown.shade800,
               child: Text(user!.name[0].toUpperCase()))
-          : SizedBox(
-              height: size * 2,
-              width: size * 2,
-              child: CachedNetworkImage(imageUrl: user!.photoUrl!)),
+          : CircleAvatar(
+              radius: size,
+              backgroundColor: Colors.brown.shade800,
+              child: ClipOval(
+                child: CachedNetworkImage(imageUrl: user!.photoUrl!),
+              ),
+            ),
     );
   }
 }

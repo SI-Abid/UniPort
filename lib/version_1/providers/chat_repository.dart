@@ -1,16 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart';
-import 'package:uniport/version_1/models/batch_model.dart';
 import 'package:uniport/version_1/models/models.dart';
-
-import '../models/last_message.dart';
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepository(
@@ -345,5 +340,16 @@ class ChatRepository {
       }
     });
     return teachers;
+  }
+
+  // *** MARK AS READ ***
+  Future<void> markAsRead(Message message) async {
+    String chatCollection = message.chatId.length < 50 ? 'advisor groups' : 'chats';
+    await firestore
+        .collection(chatCollection)
+        .doc(message.chatId)
+        .collection('messages')
+        .doc(message.createdAt.toString())
+        .update({'readAt': DateTime.now().millisecondsSinceEpoch});
   }
 }

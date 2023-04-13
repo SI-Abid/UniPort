@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinch_zoom/pinch_zoom.dart';
+import 'package:uniport/version_1/providers/chat_controller.dart';
 
 import '../models/models.dart';
 import '../services/helper.dart';
@@ -30,7 +31,7 @@ class MessageTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (!isMe && message.readAt == null) {
       // message.markAsRead(chatId);
-      // TODO: mark as read
+      ref.watch(chatControllerProvider).readMessage(message);
     }
     bool isLeading = message.sender != prevMsg?.sender ||
         formatTime(message.createdAt) != formatTime(prevMsg?.createdAt ?? 0);
@@ -308,7 +309,7 @@ class MessageTile extends ConsumerWidget {
                     name: 'Delete Message',
                     onTap: () async {
                       // message.delete(chatId, isLast, prevMsg);
-                      
+
                       Navigator.pop(context);
                     }),
 
@@ -416,8 +417,8 @@ class MessageTile extends ConsumerWidget {
             onPressed: () {
               //hide alert dialog
               Navigator.pop(context);
-              // message.update(updatedMsg, chatId, isLast);
-              // TODO: update message
+              message.update(updatedMsg, isLast);
+              //   // TODO: update message
             },
             child: const Text(
               'Update',

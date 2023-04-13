@@ -4,7 +4,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class ForgetPasswordScreen extends StatelessWidget {
   static const String routeName = '/forget_password';

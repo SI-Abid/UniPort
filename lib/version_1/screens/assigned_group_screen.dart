@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/models/last_message.dart';
 import 'package:uniport/version_1/models/models.dart';
 import 'package:uniport/version_1/providers/chat_controller.dart';
 import 'package:uniport/version_1/screens/group_chat_screen.dart';
@@ -22,13 +21,14 @@ class _AssignedGroupScreenState extends State<AssignedGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const AppTitle(title: 'Assigned Batch'),
-        automaticallyImplyLeading: false,
+        title: const AppTitle(title: 'Groups'),
+        leadingWidth: 24,
+        iconTheme: IconThemeData(color: Colors.teal.shade800),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,

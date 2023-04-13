@@ -1,22 +1,37 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class CounterDown extends StatefulWidget {
+final countDownProvider =
+    StateNotifierProvider<CountDown, int>((ref) => CountDown());
+
+class CountDown extends StateNotifier<int> {
+  CountDown() : super(30);
+
+  void startCountDown() {
+    state = 30;
+  }
+
+  void decrement() {
+    state--;
+  }
+}
+
+class CounterDown extends ConsumerStatefulWidget {
   const CounterDown({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<CounterDown> createState() => _CounterDownState();
+  ConsumerState<CounterDown> createState() => _CounterDownState();
 }
 
-class _CounterDownState extends State<CounterDown>
+class _CounterDownState extends ConsumerState<CounterDown>
     with SingleTickerProviderStateMixin {
   // create a timer from 30 to 0
   late AnimationController controller;
   late Animation<int> animation;
-  int counter = 30;
 
   @override
   void initState() {
@@ -27,9 +42,7 @@ class _CounterDownState extends State<CounterDown>
     );
     animation = IntTween(begin: 30, end: 0).animate(controller)
       ..addListener(() {
-        setState(() {
-          counter = animation.value;
-        });
+        ref.read(countDownProvider.notifier).decrement();
       });
     controller.forward();
   }
@@ -42,6 +55,12 @@ class _CounterDownState extends State<CounterDown>
 
   @override
   Widget build(BuildContext context) {
+    int state = ref.watch(countDownProvider);
+    if (state == 30) {
+      controller.forward();
+    } else if (state == 0) {
+      controller.stop();
+    }
     return DottedBorder(
       padding: const EdgeInsets.all(15),
       dashPattern: const [5, 5],
@@ -49,7 +68,7 @@ class _CounterDownState extends State<CounterDown>
       strokeWidth: 1,
       borderType: BorderType.Circle,
       child: Text(
-        counter.toString().padLeft(2, '0'),
+        state.toString().padLeft(2, '0'),
         style: GoogleFonts.sen(
           letterSpacing: 0.5,
           fontSize: 19,

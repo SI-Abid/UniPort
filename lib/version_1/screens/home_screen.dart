@@ -1,10 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uniport/version_1/models/user.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/providers/providers.dart';
 import 'package:uniport/version_1/screens/screens.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 
@@ -50,7 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('onMessage: $message');
+      if (kDebugMode) {
+        print('onMessage: $message');
+      }
       if (message.notification != null) {
         showNotification(message);
       }
@@ -79,7 +81,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    print(message.notification);
+    if (kDebugMode) {
+      print(message.notification);
+    }
 
     await flutterLocalNotificationsPlugin.show(
       0,
@@ -121,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           const NotificationButton(),
           GestureDetector(
             onTap: () {
-              ref.read(authControllerProvider).signOut(context);
+              ref.read(userProvider.notifier).logout();
             },
             child: Card(
               elevation: 2,
@@ -143,20 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: SingleChildScrollView(
         child: SizedBox(
           width: double.infinity,
-          child: ref.watch(userAuthProvider).when(
-                data: (user) {
-                  return _getFeatureCards(user);
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (err, stack) {
-                  Fluttertoast.showToast(msg: err.toString());
-                  return const Center(
-                    child: Text('Error'),
-                  );
-                },
-              ),
+          child: _getFeatureCards(ref.watch(userProvider)),
         ),
       ),
       backgroundColor:
@@ -172,62 +163,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       children: [
         // *NOTE: for all users
         const CustomCard(
-            iconPath: 'assets/icon/chat_any.svg',
-            title: 'CHAT',
-            subtitle: 'ONE-ONE',
-            actionName: 'MESSAGE',
-            routeName: ChatScreen.routeName),
+          iconPath: 'assets/icon/chat_any.svg',
+          title: 'CHAT',
+          subtitle: 'ONE-ONE',
+          actionName: 'MESSAGE',
+          routeName: ChatScreen.routeName,
+        ),
         // *NOTE: for students
         if (user!.usertype == 'student' || widget.debug) ...[
           const CustomCard(
-              iconPath: 'assets/icon/anonymous.svg',
-              title: 'CHAT',
-              subtitle: 'ANONYMOUS',
-              actionName: 'REPORT',
-              routeName: '/studentReport'),
+            iconPath: 'assets/icon/anonymous.svg',
+            title: 'CHAT',
+            subtitle: 'ANONYMOUS',
+            actionName: 'REPORT',
+            routeName: StudentReportScreen.routeName,
+          ),
           const CustomCard(
-              iconPath: 'assets/icon/group_chat.svg',
-              title: 'GROUP CHAT',
-              subtitle: 'ADVISOR & COURSES',
-              actionName: 'MESSAGE',
-              routeName: '/groupChat'),
+            iconPath: 'assets/icon/group_chat.svg',
+            title: 'GROUP CHAT',
+            subtitle: 'ADVISOR & COURSES',
+            actionName: 'MESSAGE',
+            routeName: GroupChatScreen.routeName,
+          ),
         ],
         // *NOTE: for teachers
         if (user.usertype == 'teacher' || widget.debug)
           const CustomCard(
-              iconPath: 'assets/icon/assigned_batch.svg',
-              title: 'ASSIGNED BATCH',
-              subtitle: 'GROUP CHAT',
-              actionName: 'MESSAGE',
-              routeName: '/assignedBatch'),
+            iconPath: 'assets/icon/assigned_batch.svg',
+            title: 'ASSIGNED BATCH',
+            subtitle: 'GROUP CHAT',
+            actionName: 'MESSAGE',
+            routeName: AssignedGroupScreen.routeName,
+          ),
         if (user.usertype == 'teacher' || widget.debug)
           const CustomCard(
-              iconPath: 'assets/icon/student.svg',
-              title: 'STUDENTS',
-              subtitle: 'PENDING',
-              actionName: 'APPROVE',
-              routeName: '/studentApproval'),
+            iconPath: 'assets/icon/student.svg',
+            title: 'STUDENTS',
+            subtitle: 'PENDING',
+            actionName: 'APPROVE',
+            routeName: StudentApproval.routeName,
+          ),
         // * NOTE: for HODs
         if (user.isHod == true || widget.debug) ...[
           const CustomCard(
-              iconPath: 'assets/icon/teacher.svg',
-              title: 'TEACHERS',
-              subtitle: 'PENDING',
-              actionName: 'APPROVE',
-              routeName: '/teacherApproval'),
+            iconPath: 'assets/icon/teacher.svg',
+            title: 'TEACHERS',
+            subtitle: 'PENDING',
+            actionName: 'APPROVE',
+            routeName: TeacherApproval.routeName,
+          ),
           const CustomCard(
             iconPath: 'assets/icon/batch_advisor.svg',
             title: 'ADVISOR',
             subtitle: 'BATCH',
             actionName: 'ASSIGN',
-            routeName: '/assignAdvisor',
+            routeName: AssignAdvisor.routeName,
           ),
           const CustomCard(
             iconPath: 'assets/icon/anonymous.svg',
             title: 'REPORTS',
             subtitle: 'ANONYMOUS',
             actionName: 'VIEW',
-            routeName: '/reportView',
+            routeName: ReportViewScreen.routeName,
           ),
         ]
       ],

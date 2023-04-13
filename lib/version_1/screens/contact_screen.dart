@@ -68,7 +68,10 @@ class ContactScreen extends StatelessWidget {
                     fontSize: 16,
                     color: Colors.black,
                   ),
-                  suffixIcon: const Icon(Icons.search, color: Colors.black,),
+                  suffixIcon: const Icon(
+                    Icons.search,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/models/user.dart';
 
 import '../providers/providers.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
-import '../screens/screens.dart';
 
 class TeacherInfoBody extends ConsumerStatefulWidget {
   const TeacherInfoBody({super.key});
@@ -21,6 +20,8 @@ class _TeacherInfoBodyState extends ConsumerState<TeacherInfoBody> {
   final intialController = TextEditingController();
 
   final deptController = TextEditingController();
+
+  final designationController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -82,13 +83,12 @@ class _TeacherInfoBodyState extends ConsumerState<TeacherInfoBody> {
                     return;
                   }
                   formKey.currentState!.save();
-                  final data = {
-                    'teacherId': tIdController.text.trim(),
-                    'initial': intialController.text.trim().toUpperCase(),
-                  };
-                  ref
-                      .read(authControllerProvider)
-                      .createUser(context, data: data);
+                  ref.read(userProvider.notifier).setAcademicInfo(UserModel(
+                        teacherId: tIdController.text.trim(),
+                        initials: intialController.text.trim().toUpperCase(),
+                        department: deptController.text.trim(),
+                        designation: designationController.text.trim(),
+                      ));
                 },
               ),
             ],
@@ -174,9 +174,9 @@ class _TeacherInfoBodyState extends ConsumerState<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) => ref
-            .read(authControllerProvider)
-            .createUser(context, data: {'designation': value}),
+        onChanged: (value) => setState(() {
+          designationController.text = value.toString();
+        }),
       ),
     );
   }
@@ -266,9 +266,9 @@ class _TeacherInfoBodyState extends ConsumerState<TeacherInfoBody> {
                   child: Text(e),
                 ))
             .toList(),
-        onChanged: (value) => ref
-            .read(authControllerProvider)
-            .createUser(context, data: {'department': value}),
+        onChanged: (value) => setState(() {
+          deptController.text = value.toString();
+        }),
       ),
     );
   }

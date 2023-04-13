@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:email_auth/email_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniport/version_1/screens/academic_info_reg.dart';
 import 'package:uniport/version_1/screens/home_screen.dart';
 import 'package:uniport/version_1/screens/login_screen.dart';
@@ -21,7 +18,6 @@ final authRepositoryProvider = Provider<AuthRepository>(
     auth: FirebaseAuth.instance,
     googleSignIn: GoogleSignIn(),
     firestore: FirebaseFirestore.instance,
-    emailAuth: EmailAuth(sessionName: 'Uniport'),
   ),
 );
 
@@ -29,12 +25,10 @@ class AuthRepository {
   final FirebaseAuth auth;
   final GoogleSignIn googleSignIn;
   final FirebaseFirestore firestore;
-  final EmailAuth emailAuth;
 
   final Map<String, dynamic> _userdata = {};
 
   AuthRepository({
-    required this.emailAuth,
     required this.auth,
     required this.googleSignIn,
     required this.firestore,
@@ -80,7 +74,7 @@ class AuthRepository {
     });
     QuerySnapshot result = await firestore
         .collection('users')
-        .where('id', isEqualTo: user.uid)
+        .where('uid', isEqualTo: user.uid)
         .get();
     List<DocumentSnapshot> documents = result.docs;
     if (documents.isEmpty) {
@@ -93,6 +87,9 @@ class AuthRepository {
     } else {
       // *** EXISTING USER ***
       // *** NAVIGATE TO HOME SCREEN ***
+      if (kDebugMode) {
+        print(documents[0].data);
+      }
       // DONE: Navigate to home screen
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
@@ -102,7 +99,7 @@ class AuthRepository {
   }
 
   // *** SIGN IN WITH EMAIL ***
-  Future<void> signInWithEmail(BuildContext context,
+  Future<bool> signInWithEmail(BuildContext context,
       {required String email, required String password}) async {
     try {
       User? user = (await auth.signInWithEmailAndPassword(
@@ -110,18 +107,18 @@ class AuthRepository {
           .user;
       if (user == null) {
         // *** FAILSAFE ***
-        return;
+        return false;
       }
       DocumentSnapshot result =
           await firestore.collection('users').doc(user.uid).get();
       if (result.exists == false) {
         // *** USER REGISTERED BUT NO DATA ***
         // *** NAVIGATE TO SIGN UP SCREEN ***
-        // DONE: Navigate to sign up screen
+        // DONE: Navigate to sign up screenobject
         if (context.mounted) {
           Navigator.pushNamed(context, PersonalInfoScreen.routeName);
         }
-        return;
+        return false;
       }
       // *** NAVIGATE TO HOME SCREEN ***
       // DONE: Navigate to home screen
@@ -129,6 +126,7 @@ class AuthRepository {
         Navigator.pushNamedAndRemoveUntil(
             context, HomeScreen.routeName, (route) => false);
       }
+      return true;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         // *** USER NOT FOUND ***
@@ -137,7 +135,7 @@ class AuthRepository {
         // *** WRONG PASSWORD ***
         Fluttertoast.showToast(msg: 'Wrong password');
       }
-      return;
+      return false;
     }
   }
 

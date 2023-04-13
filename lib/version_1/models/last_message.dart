@@ -17,5 +17,4 @@ class GroupLastMessage extends LastMessage {
     required Message message,
     required UserModel sender,
   }) : super(message: message, sender: sender);
-
 }

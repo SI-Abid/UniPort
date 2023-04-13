@@ -18,7 +18,7 @@ class _WelcomePageScreenState extends State<WelcomePageScreen> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((prefs) {
-      final flag = prefs.getBool('isFirstTime')??true;
+      final flag = prefs.getBool('isFirstTime') ?? true;
       if (flag) {
         prefs.setBool('isFirstTime', false);
         navigateToNextScreen();

@@ -1,19 +1,12 @@
-import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:email_auth/email_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniport/version_1/services/notification_service.dart';
 import 'package:http/http.dart' as http;
 
 import '../../firebase_options.dart';
-import '../models/user.dart';
-import 'providers.dart';
 
 Future<void> initiate() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +25,9 @@ Future<Uint8List?> getLargeIconBytes(String photoUrl) async {
     final response = await http.get(Uri.parse(photoUrl));
     return response.bodyBytes;
   } catch (e) {
-    print('Error getting large icon bytes: $e');
+    if (kDebugMode) {
+      print('Error getting large icon bytes: $e');
+    }
     return null;
   }
 }

@@ -37,7 +37,7 @@ class _PasswordFieldState extends State<PasswordField> {
             letterSpacing: 0.5,
             fontSize: 18,
             fontWeight: FontWeight.w600,
-                color: const Color.fromARGB(255, 24, 143, 121),
+            color: const Color.fromARGB(255, 24, 143, 121),
           ),
           decoration: InputDecoration(
             constraints: const BoxConstraints(minHeight: 65),

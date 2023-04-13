@@ -204,7 +204,7 @@ class ReportViewScreen extends StatelessWidget {
 
 class StudentReportScreen extends StatelessWidget {
   static const String routeName = '/student-report';
-  
+
   StudentReportScreen({super.key});
 
   final titleController = TextEditingController();
@@ -217,7 +217,10 @@ class StudentReportScreen extends StatelessWidget {
         // centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        leading: BackButton(
+          color: Colors.teal.shade800,
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       backgroundColor: const Color(0xfff5f5f5),
       body: SizedBox(

@@ -44,7 +44,7 @@ class OtpRepository {
     }
     emailAuth.sendOtp(recipientMail: email);
     // *** Navigate to OTP Verify Screen ***
-    if (context.mounted) {
+    if (context.mounted && context.widget.toString() != 'OtpVerifyScreen') {
       Navigator.pushNamed(context, OtpVerifyScreen.routeName, arguments: email);
     }
   }

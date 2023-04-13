@@ -4,11 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    
+        {
+            "name": "Test UniPort",
+            "request": "launch",
+            "program": "lib/test.dart",
+            "type": "dart",
+            "args": ["-d", "chrome","--web-renderer", "html","--web-port", "8888"],
+            "flutterMode": "debug"
+        },
         {
             "name": "UniPort (web)",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "chrome","--web-port", "8888"],
+            "args": ["-d", "chrome","--web-renderer", "html","--web-port", "8888"],
         },
         {
             "name": "UniPort",

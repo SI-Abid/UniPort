@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/providers/auth_controller.dart';
+import 'package:uniport/version_1/screens/academic_info_reg.dart';
 
+import '../models/user.dart';
+import '../providers/user_provider.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 
-class PersonalInfoScreen extends StatelessWidget {
+class PersonalInfoScreen extends ConsumerWidget {
   static const String routeName = '/personal-info';
   const PersonalInfoScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final next = ref.watch(userProvider
+        .select((value) => value.status == Status.personalInfoDone));
+    if (next) {
+      Navigator.pushNamed(context, AcademicInfoScreen.routeName);
+    }
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 35,
@@ -142,15 +149,12 @@ class _PersonalInfoBodyState extends State<PersonalInfoBody> {
                       return;
                     }
                     formKey.currentState!.save();
-                    final data = {
-                      'firstName': fNameController.text.trim(),
-                      'lastName': lNameController.text.trim(),
-                      'contact': phoneController.text.trim(),
-                    };
                     // DONE: add navigation to the next screen
-                    ref
-                        .read(authControllerProvider)
-                        .createUser(context, data: data);
+                    ref.read(userProvider.notifier).setPersonalInfo(UserModel(
+                          firstName: fNameController.text.trim(),
+                          lastName: lNameController.text.trim(),
+                          contact: phoneController.text.trim(),
+                        ));
                   },
                 );
               }),
