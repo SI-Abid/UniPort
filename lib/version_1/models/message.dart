@@ -3,7 +3,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:uniport/version_1/models/user.dart';
 
 class Message {
-  String chatId = ''; // id of the chat the message belongs to
+  String chatId; // id of the chat the message belongs to
   final String content; // message content
   final String sender; // uid of the sender
   final MessageType type; // type of the message
@@ -15,10 +15,12 @@ class Message {
     required this.createdAt,
     this.type = MessageType.text,
     this.readAt,
+    this.chatId = '',
   });
   final key = Key.fromLength(32);
   Map<String, dynamic> toJson() {
     return {
+      'chatId': chatId,
       'content': encrypt(content),
       'sender': sender,
       'createdAt': createdAt,
@@ -50,6 +52,7 @@ class Message {
       createdAt: json['createdAt'],
       type: MessageType.values[json['type']],
       readAt: json['readAt'],
+      chatId: json['chatId'],
     );
   }
 
@@ -91,6 +94,11 @@ class Message {
           .doc(chatId)
           .update({'lastMessage.content': encrypt(newMsg)});
     }
+  }
+
+  @override
+  String toString() {
+    return 'Message(chatId: $chatId, content: $content, sender: $sender, type: $type, createdAt: $createdAt, readAt: $readAt)';
   }
 }
 

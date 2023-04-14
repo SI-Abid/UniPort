@@ -1,4 +1,5 @@
 enum Status {
+  loading,
   loggedIn,
   loggedOut,
   newUser,

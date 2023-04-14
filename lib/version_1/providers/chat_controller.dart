@@ -42,13 +42,16 @@ class ChatController {
     return ref.read(chatRepositoryProvider).getChatStream(recieverId);
   }
 
-  Stream<List<LastMessage>> lastMessageStream() {
-    return ref.read(chatRepositoryProvider).getLastMessageStream();
+  Stream<List<Stream<LastMessage>>> lastMessageStream() {
+    final user = ref.read(userProvider);
+    return ref.read(chatRepositoryProvider).getLastMessageStream(user);
   }
 
   Stream<List<GroupLastMessage>> groupLastMessageStream() {
     final user = ref.read(userProvider);
-    return ref.read(chatRepositoryProvider).getGroupLastMessageStream(user);
+    final stream =
+        ref.read(chatRepositoryProvider).getGroupLastMessageStream(user);
+    return stream;
   }
 
   Stream<List<GroupMessage>> groupChatStream({required String groupId}) {

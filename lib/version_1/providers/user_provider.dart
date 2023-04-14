@@ -22,12 +22,16 @@ class UserProvider extends StateNotifier<UserModel> {
       {required this.firestore, required this.auth, required this.googleSignIn})
       : super(UserModel());
 
-  void logout() {
+  Future<void> logout() async {
+    state.status = Status.loading;
+    await googleSignIn.signOut();
+    updateOnlineStatus(false);
     state = UserModel();
     state.status = Status.loggedOut;
   }
 
   Future<void> loginWithEmail(String email, String password) async {
+    state.status = Status.loading;
     try {
       User? user = (await auth.signInWithEmailAndPassword(
               email: email, password: password))
@@ -66,6 +70,7 @@ class UserProvider extends StateNotifier<UserModel> {
       // *** USER CANCELLED SIGN IN ***
       return;
     }
+    state.status = Status.loading;
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -93,16 +98,17 @@ class UserProvider extends StateNotifier<UserModel> {
       // *** NAVIGATE TO SIGN UP SCREEN ***
       // DONE: Navigate to sign up screen
       state.status = Status.newUser;
-    } else {
-      // *** EXISTING USER ***
-      // *** NAVIGATE TO HOME SCREEN ***
-      state = UserModel.fromJson(documents[0].data()! as Map<String, dynamic>);
-      state.status = Status.loggedIn;
+      return;
     }
+    // *** EXISTING USER ***
+    // *** NAVIGATE TO HOME SCREEN ***
+    state = UserModel.fromJson(documents[0].data()! as Map<String, dynamic>);
+    state.status = Status.loggedIn;
     return;
   }
 
   Future<void> registerUser({required String password}) async {
+    state.status = Status.loading;
     try {
       var user = auth.currentUser;
       if (user != null) {
@@ -176,6 +182,7 @@ class UserProvider extends StateNotifier<UserModel> {
     await firestore
         .collection('users')
         .where('approved', isEqualTo: true)
+        .where('uid', isNotEqualTo: auth.currentUser!.uid)
         .get()
         .then((value) {
       for (var element in value.docs) {
@@ -183,5 +190,13 @@ class UserProvider extends StateNotifier<UserModel> {
       }
     });
     return users;
+  }
+
+  // *** online status ***
+  Future<void> updateOnlineStatus(bool isOnline) async {
+    await firestore.collection('users').doc(auth.currentUser!.uid).update({
+      'isOnline': isOnline,
+      'lastSeen': DateTime.now().millisecondsSinceEpoch
+    });
   }
 }

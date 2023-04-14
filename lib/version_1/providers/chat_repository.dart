@@ -44,9 +44,9 @@ class ChatRepository {
 
   String _getChatId(String senderId, String recieverId) {
     if (senderId.hashCode <= recieverId.hashCode) {
-      return '$senderId-$recieverId';
+      return '$senderId$recieverId';
     }
-    return '$recieverId-$senderId';
+    return '$recieverId$senderId';
   }
 
   Future<void> _sendMessage(String chatId, Message message) async {
@@ -71,6 +71,7 @@ class ChatRepository {
       content: text,
       createdAt: timestamp,
       type: MessageType.text,
+      chatId: chatId,
     );
     _sendMessage(chatId, message);
   }
@@ -89,6 +90,7 @@ class ChatRepository {
         content: url,
         createdAt: timestamp,
         type: MessageType.image,
+        chatId: chatId,
       );
       _sendMessage(chatId, message);
     }
@@ -133,32 +135,38 @@ class ChatRepository {
   }
 
   // *** LAST MESSAGE STREAM ***
-  Stream<List<LastMessage>> getLastMessageStream() {
+  Stream<List<Stream<LastMessage>>> getLastMessageStream(UserModel user) {
     // get the last message from messages subcollection of each chat where user is a member
     // chats -> chatId -> messages -> message
     return firestore
         .collection('chats')
-        .where('members', arrayContains: auth.currentUser!.uid)
+        .where('members', arrayContains: user.uid)
         .snapshots()
         .map((event) {
-      List<LastMessage> lastMessages = [];
+      List<Stream<LastMessage>> lastMessages = [];
       for (var element in event.docs) {
-        element.reference
+        String chatId = element.reference.id;
+        final stream = element.reference
             .collection('messages')
             .orderBy('createdAt', descending: true)
             .limit(1)
             .snapshots()
             .asyncMap((event) async {
-          for (var ele in event.docs) {
-            final msg = Message.fromJson(ele.data());
-            final user = await firestore
-                .collection('users')
-                .doc(msg.sender)
-                .get()
-                .then((value) => UserModel.fromJson(value.data()!));
-            lastMessages.add(LastMessage(sender: user, message: msg));
-          }
+          // get the last message only
+          final ele = event.docs.first;
+          final msg = Message.fromJson(ele.data());
+          final sender = await firestore
+              .collection('users')
+              .doc(msg.sender)
+              .get()
+              .then((value) => UserModel.fromJson(value.data()!));
+          msg.chatId = chatId;
+          return LastMessage(
+            message: msg,
+            sender: sender,
+          );
         });
+        lastMessages.add(stream);
       }
       return lastMessages;
     });
@@ -344,7 +352,8 @@ class ChatRepository {
 
   // *** MARK AS READ ***
   Future<void> markAsRead(Message message) async {
-    String chatCollection = message.chatId.length < 50 ? 'advisor groups' : 'chats';
+    String chatCollection =
+        message.chatId.length < 50 ? 'advisor groups' : 'chats';
     await firestore
         .collection(chatCollection)
         .doc(message.chatId)

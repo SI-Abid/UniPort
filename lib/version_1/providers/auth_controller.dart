@@ -43,10 +43,6 @@ class AuthController {
     authRepository.signInWithEmail(context, email: email, password: password);
   }
 
-  void setOnlineStatus(bool status) {
-    authRepository.updateOnlineStatus(status);
-  }
-
   void createUser(BuildContext context,
       {Map<String, dynamic> data = const {}, bool lastStep = false}) {
     authRepository.createUser(context, data: data, lastStep: lastStep);

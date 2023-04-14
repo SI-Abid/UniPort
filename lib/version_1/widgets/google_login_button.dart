@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:uniport/version_1/providers/providers.dart';
 
-
 class GoogleLoginButton extends ConsumerStatefulWidget {
   const GoogleLoginButton({super.key});
 
@@ -29,7 +28,9 @@ class _GoogleLoginButtonState extends ConsumerState<GoogleLoginButton> {
             ),
           ),
         ),
-        onPressed: () => ref.read(userProvider.notifier).loginWithGoogle(),
+        onPressed: () {
+          ref.read(userProvider.notifier).loginWithGoogle();
+        },
         child: SvgPicture.asset(
           alignment: Alignment.bottomCenter,
           'assets/images/logo_google_icon.svg',

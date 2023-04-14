@@ -97,7 +97,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ref.read(authControllerProvider).setOnlineStatus(false);
     super.dispose();
   }
 
@@ -105,9 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      ref.read(authControllerProvider).setOnlineStatus(true);
+      ref.read(userProvider.notifier).updateOnlineStatus(true);
     } else {
-      ref.read(authControllerProvider).setOnlineStatus(false);
+      ref.read(userProvider.notifier).updateOnlineStatus(false);
     }
     debugPrint('HomeScreen: $state');
   }

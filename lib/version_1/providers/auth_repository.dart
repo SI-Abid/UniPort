@@ -139,14 +139,6 @@ class AuthRepository {
     }
   }
 
-  // *** online status ***
-  Future<void> updateOnlineStatus(bool isOnline) async {
-    await firestore.collection('users').doc(auth.currentUser!.uid).update({
-      'isOnline': isOnline,
-      'lastSeen': DateTime.now().millisecondsSinceEpoch
-    });
-  }
-
   // *** SIGN out ***
   Future<void> signOut(BuildContext context) async {
     await auth.signOut();

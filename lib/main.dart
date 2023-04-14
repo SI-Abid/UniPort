@@ -25,7 +25,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(userProvider.select((value) => value.status));
+    final status = ref.watch(userProvider).status;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'UniPort',
@@ -35,11 +35,22 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: status == Status.loggedIn
-          ? const HomeScreen()
-          : status == Status.newUser
-              ? const PersonalInfoScreen()
-              : const LoginScreen(),
+      home: _getScreen(status),
     );
+  }
+
+  _getScreen(Status status) {
+    switch (status) {
+      case Status.loggedOut:
+        return const LoginScreen();
+      case Status.loggedIn:
+        return const HomeScreen();
+      case Status.loading:
+        return const LoadingScreen();
+      case Status.newUser:
+        return const PersonalInfoScreen();
+      default:
+        return const ErrorScreen(error: 'Something went wrong');
+    }
   }
 }
