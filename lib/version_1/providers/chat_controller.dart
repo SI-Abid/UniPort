@@ -71,8 +71,8 @@ class ChatController {
     ref.read(chatRepositoryProvider).sendGroupImage(user, groupId, path);
   }
 
-  void deleteMessage({required Message message, required String chatId}) {
-    chatRepository.deleteMessage(chatId: chatId, message: message);
+  void deleteMessage({required Message message, bool isLast=false}) {
+    chatRepository.deleteMessage(chatId: message.chatId, message: message, isLast: isLast);
   }
 
   void deleteChat({required String chatId, String? collection}) {

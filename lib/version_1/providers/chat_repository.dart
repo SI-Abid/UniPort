@@ -99,18 +99,27 @@ class ChatRepository {
   }
 
   // *** DELETE MESSAGE ***
-  Future<void> deleteMessage(
-      {required String chatId, required Message message}) async {
-    await firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .doc(message.createdAt.toString())
-        .delete();
+  Future<void> deleteMessage({
+    required String chatId,
+    required Message message,
+    required bool isLast,
+  }) async {
+    final ref = firestore.collection('chats').doc(chatId);
+    await ref.collection('messages').doc(message.createdAt.toString()).delete();
     // if message is image, delete image from storage
     if (message.type == MessageType.image) {
       Reference ref = storage.refFromURL(message.content);
       await ref.delete();
+    }
+    // update the last message time
+    if (isLast) {
+      ref
+          .collection('messages')
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get()
+          .then((value) => ref
+              .update({'lastMessageAt': value.docs.first.data()['createdAt']}));
     }
   }
 

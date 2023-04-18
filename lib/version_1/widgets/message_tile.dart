@@ -308,8 +308,8 @@ class MessageTile extends ConsumerWidget {
                         color: Colors.red, size: 26),
                     name: 'Delete Message',
                     onTap: () async {
-                      // message.delete(chatId, isLast, prevMsg);
-
+                      ref.read(chatControllerProvider).deleteMessage(
+                          message: message, isLast: nextMsg == null);
                       Navigator.pop(context);
                     }),
 
