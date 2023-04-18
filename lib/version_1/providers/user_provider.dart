@@ -13,14 +13,20 @@ final userProvider = StateNotifierProvider<UserProvider, UserModel>((ref) {
       googleSignIn: GoogleSignIn(scopes: ['email']));
 });
 
+final userListProvider = FutureProvider((ref) {
+  return ref.watch(userProvider.notifier).getAllUsers();
+});
+
 class UserProvider extends StateNotifier<UserModel> {
   final FirebaseFirestore firestore;
   final FirebaseAuth auth;
   final GoogleSignIn googleSignIn;
 
-  UserProvider(
-      {required this.firestore, required this.auth, required this.googleSignIn})
-      : super(UserModel());
+  UserProvider({
+    required this.firestore,
+    required this.auth,
+    required this.googleSignIn,
+  }) : super(UserModel());
 
   Future<void> logout() async {
     state.status = Status.loading;
@@ -182,13 +188,13 @@ class UserProvider extends StateNotifier<UserModel> {
     await firestore
         .collection('users')
         .where('approved', isEqualTo: true)
-        .where('uid', isNotEqualTo: auth.currentUser!.uid)
         .get()
         .then((value) {
       for (var element in value.docs) {
         users.add(UserModel.fromJson(element.data()));
       }
     });
+    users.retainWhere((element) => element.uid != state.uid);
     return users;
   }
 

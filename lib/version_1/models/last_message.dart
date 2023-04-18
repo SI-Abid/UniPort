@@ -2,9 +2,9 @@ import 'package:uniport/version_1/models/models.dart';
 
 class LastMessage {
   final Message message;
-  final UserModel sender;
+  final UserModel user;
 
-  LastMessage({required this.message, required this.sender});
+  LastMessage({required this.message, required this.user});
 }
 
 class GroupLastMessage extends LastMessage {
@@ -16,5 +16,5 @@ class GroupLastMessage extends LastMessage {
     required this.sections,
     required Message message,
     required UserModel sender,
-  }) : super(message: message, sender: sender);
+  }) : super(message: message, user: sender);
 }

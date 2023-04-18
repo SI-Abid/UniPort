@@ -15,10 +15,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case ChatScreen.routeName:
       return MaterialPageRoute(builder: (context) => const ChatScreen());
     case MessageScreen.routeName:
-      final args = settings.arguments as UserModel;
       return MaterialPageRoute(
         builder: (context) => MessageScreen(
-          messageSender: args,
+          messageSender: settings.arguments as UserModel,
         ),
       );
     case ReportViewScreen.routeName:

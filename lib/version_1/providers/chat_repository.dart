@@ -50,14 +50,16 @@ class ChatRepository {
   }
 
   Future<void> _sendMessage(String chatId, Message message) async {
+    final recieverID = message.chatId.replaceAll(message.sender, '');
     await firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .add(message.toJson());
+        .doc(message.createdAt.toString())
+        .set(message.toJson());
     await firestore.collection('chats').doc(chatId).set({
-      // 'lastMessage': message.toJson(),
-      'members': FieldValue.arrayUnion([message.sender]),
+      'lastMessageAt': message.createdAt,
+      'members': FieldValue.arrayUnion([message.sender, recieverID]),
     }, SetOptions(merge: true));
   }
 
@@ -135,38 +137,32 @@ class ChatRepository {
   }
 
   // *** LAST MESSAGE STREAM ***
-  Stream<List<Stream<LastMessage>>> getLastMessageStream(UserModel user) {
-    // get the last message from messages subcollection of each chat where user is a member
-    // chats -> chatId -> messages -> message
+  Stream<List<Stream<LastMessage>>> getLastMessageStream(
+      UserModel user, List<UserModel> userList) {
     return firestore
         .collection('chats')
         .where('members', arrayContains: user.uid)
+        .orderBy('lastMessageAt', descending: true)
         .snapshots()
         .map((event) {
       List<Stream<LastMessage>> lastMessages = [];
-      for (var element in event.docs) {
-        String chatId = element.reference.id;
-        final stream = element.reference
+      for (var doc in event.docs) {
+        String chatId = doc.reference.id;
+        String opponentID =
+            doc.data()['members'].where((element) => element != user.uid).first;
+        lastMessages.add(doc.reference
             .collection('messages')
             .orderBy('createdAt', descending: true)
             .limit(1)
             .snapshots()
-            .asyncMap((event) async {
-          // get the last message only
-          final ele = event.docs.first;
-          final msg = Message.fromJson(ele.data());
-          final sender = await firestore
-              .collection('users')
-              .doc(msg.sender)
-              .get()
-              .then((value) => UserModel.fromJson(value.data()!));
-          msg.chatId = chatId;
-          return LastMessage(
-            message: msg,
-            sender: sender,
-          );
-        });
-        lastMessages.add(stream);
+            .map((event) {
+          final msg = event.docs.first;
+          final message = Message.fromJson(msg.data());
+          message.chatId = chatId;
+          final opponent =
+              userList.firstWhere((element) => element.uid == opponentID);
+          return LastMessage(message: message, user: opponent);
+        }));
       }
       return lastMessages;
     });

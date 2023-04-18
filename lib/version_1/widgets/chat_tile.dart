@@ -8,11 +8,10 @@ import '../services/helper.dart';
 import '../widgets/widgets.dart';
 
 class ChatTile extends StatelessWidget {
-  const ChatTile(
-      {super.key, required this.message, required this.messageSender});
+  const ChatTile({super.key, required this.message, required this.otherUser});
 
   final Message message;
-  final UserModel messageSender;
+  final UserModel otherUser;
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +19,19 @@ class ChatTile extends StatelessWidget {
     // print('${lastMsg.sender} ${loggedInUser.uid}');
     bool isUnread = message.readAt == null && !isMe;
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.grey.shade400,
-          width: 1,
-        ),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: Colors.white,
+      // margin: const EdgeInsets.symmetric(horizontal: 8),
       child: ListTile(
         onTap: () {
           Navigator.pushNamed(context, MessageScreen.routeName,
-              arguments: {
-                'message': message,
-                'messageSender': messageSender,
-              });
+              arguments: otherUser);
         },
-        leading: Avatar(user: messageSender),
+        leading: Avatar(
+          user: otherUser,
+          size: 22,
+        ),
         title: Text(
-          messageSender.name,
+          otherUser.name,
           softWrap: true,
           maxLines: 1,
           style: GoogleFonts.sen(

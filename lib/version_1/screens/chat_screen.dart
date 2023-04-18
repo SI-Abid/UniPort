@@ -23,7 +23,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(userProvider.notifier).getAllUsers().then((value) {
+    ref.read(userListProvider).whenData((value) {
       setState(() {
         allUsers = value;
       });
@@ -82,80 +82,51 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   },
                   icon: const Icon(Icons.search)),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Avatar(user: user, size: 22),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Avatar(user: user),
           ),
         ],
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 16,
-            ),
-            isSearching ? _getSearchList() : _getChatList(allUsers, user),
-          ],
-        ),
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 6,
+          ),
+          isSearching ? _getSearchList() : _getChatList(allUsers),
+        ],
       ),
       backgroundColor: const Color(0xfff5f5f5),
     );
   }
 
-  Expanded _getChatList(List<UserModel> users, UserModel user) {
-    final chatListStream =
-        ref.watch(chatControllerProvider).lastMessageStream();
+  Expanded _getChatList(userList) {
+    final stream = ref.watch(chatControllerProvider).lastMessageStream();
+    // print(data.length);
     return Expanded(
       child: StreamBuilder(
-          stream: chatListStream,
-          builder: (context, snapshot) {
-            final data = snapshot.data;
-            if(data==null){
-              return const LoadingScreen();
-            }
-            return ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: data.length,
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData == false) {
+            return const Center(child: Text('No chats yet'));
+          }
+          return ListView.builder(
+              itemCount: snapshot.data!.length,
               itemBuilder: (context, index) => StreamBuilder(
-                stream: data[index],
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final lastMessage = snapshot.data as LastMessage;
-                    final sender = lastMessage.sender;
-                    final message = lastMessage.message;
-                    return SizedBox(
-                      height: 60,
-                      child: ListTile(
-                        onTap: () {
-                          Navigator.pushNamed(context, MessageScreen.routeName,
-                              arguments: sender);
-                        },
-                        leading: Avatar(user: sender),
-                        title: Text(
-                          sender.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          message.content,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                }
-              )
-            );
-          }),
+                    stream: snapshot.data![index],
+                    builder: (context, snapshot) {
+                      if (snapshot.data == null) {
+                        return const SizedBox.shrink();
+                      }
+                      final lastMessage = snapshot.data;
+                      return ChatTile(
+                          message: lastMessage!.message,
+                          otherUser: lastMessage.user);
+                    },
+                  ));
+        },
+      ),
     );
   }
 

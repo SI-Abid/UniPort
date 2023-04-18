@@ -66,7 +66,7 @@ class _AssignedGroupScreenState extends State<AssignedGroupScreen> {
                           groupId: tiles[index].message.chatId,
                           sections: tiles[index].sections,
                           lastMsg: tiles[index].message,
-                          sender: tiles[index].sender,
+                          sender: tiles[index].user,
                           batch: tiles[index].batch,
                         );
                       },

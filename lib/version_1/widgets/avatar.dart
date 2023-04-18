@@ -18,7 +18,7 @@ class Avatar extends StatelessWidget {
           color: user?.usertype == 'student' ? Colors.green : Colors.blue,
           width: 1.5,
         ),
-        borderRadius: BorderRadius.circular(size * 2),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: user!.photoUrl == null
           ? CircleAvatar(
@@ -27,10 +27,7 @@ class Avatar extends StatelessWidget {
               child: Text(user!.name[0].toUpperCase()))
           : CircleAvatar(
               radius: size,
-              backgroundColor: Colors.brown.shade800,
-              child: ClipOval(
-                child: CachedNetworkImage(imageUrl: user!.photoUrl!),
-              ),
+              foregroundImage: CachedNetworkImageProvider(user!.photoUrl!)
             ),
     );
   }

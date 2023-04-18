@@ -44,7 +44,10 @@ class ChatController {
 
   Stream<List<Stream<LastMessage>>> lastMessageStream() {
     final user = ref.read(userProvider);
-    return ref.read(chatRepositoryProvider).getLastMessageStream(user);
+    final List<UserModel> users = ref
+        .read(userListProvider)
+        .when(data: (data) => data, error: (_, __) => [], loading: () => []);
+    return ref.read(chatRepositoryProvider).getLastMessageStream(user, users);
   }
 
   Stream<List<GroupLastMessage>> groupLastMessageStream() {
