@@ -40,8 +40,8 @@ class ReportViewScreen extends StatelessWidget {
                 return bTime.compareTo(aTime);
               });
               return ListView.separated(
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 10),
+                physics: const BouncingScrollPhysics(),
+                separatorBuilder: (context, index) => const SizedBox(height: 2),
                 itemCount: reports.length,
                 itemBuilder: (context, index) {
                   final report = reports[index];
@@ -56,134 +56,132 @@ class ReportViewScreen extends StatelessWidget {
                         );
                       }));
                     },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Card(
+                        child: Container(
+                          // color: Colors.white,
+                          margin: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      report['title'],
+                                      softWrap: true,
+                                      style: GoogleFonts.sen(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Reported on: ${DateTime.fromMillisecondsSinceEpoch(report['timestamp'] as int).toString().substring(0, 10)}',
+                                      style: GoogleFonts.sen(
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text('Delete Report'),
+                                        content: const Text(
+                                            'Are you sure you want to delete this report?'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Cancel',
+                                                  style: TextStyle(
+                                                      color: Colors
+                                                          .teal.shade800))),
+                                          TextButton(
+                                            onPressed: () {
+                                              _resolveReport(reportIds[index]);
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Delete',
+                                                style: TextStyle(
+                                                    color: Colors.red)),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 25,
+                                  width: 25,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: const Icon(Icons.close,
+                                      color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text('Accept Report'),
+                                        content: const Text(
+                                            'Are you sure you want to accept this report?'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Cancel',
+                                                  style: TextStyle(
+                                                      color: Colors
+                                                          .teal.shade800))),
+                                          TextButton(
+                                            onPressed: () {
+                                              _resolveReport(reportIds[index]);
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Accept',
+                                                style: TextStyle(
+                                                    color: Colors.green)
+                                                // style: TextStyle(color: Colors.teal.shade800),
+                                                ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 25,
+                                  width: 25,
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.shade800,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: const Icon(Icons.check,
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  report['title'],
-                                  softWrap: true,
-                                  style: GoogleFonts.sen(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Reported on: ${DateTime.fromMillisecondsSinceEpoch(report['timestamp'] as int).toString().substring(0, 10)}',
-                                  style: GoogleFonts.sen(
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: const Text('Delete Report'),
-                                    content: const Text(
-                                        'Are you sure you want to delete this report?'),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Cancel',
-                                              style: TextStyle(
-                                                  color:
-                                                      Colors.teal.shade800))),
-                                      TextButton(
-                                        onPressed: () {
-                                          _resolveReport(reportIds[index]);
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Delete',
-                                            style:
-                                                TextStyle(color: Colors.red)),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 25,
-                              width: 25,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child:
-                                  const Icon(Icons.close, color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: const Text('Accept Report'),
-                                    content: const Text(
-                                        'Are you sure you want to accept this report?'),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Cancel',
-                                              style: TextStyle(
-                                                  color:
-                                                      Colors.teal.shade800))),
-                                      TextButton(
-                                        onPressed: () {
-                                          _resolveReport(reportIds[index]);
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Accept',
-                                            style:
-                                                TextStyle(color: Colors.green)
-                                            // style: TextStyle(color: Colors.teal.shade800),
-                                            ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 25,
-                              width: 25,
-                              decoration: BoxDecoration(
-                                color: Colors.teal.shade800,
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child:
-                                  const Icon(Icons.check, color: Colors.white),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   );
