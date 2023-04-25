@@ -1,16 +1,4 @@
-enum Status {
-  loading,
-  loggedIn,
-  loggedOut,
-  newUser,
-  notApproved,
-  personalInfoDone,
-  academicInfoDone,
-  registrationDone,
-}
-
 class UserModel {
-  Status status = Status.loggedOut;
   // common data
   String? usertype;
   bool? approved;
@@ -126,4 +114,6 @@ class UserModel {
   String toString() {
     return 'User{usertype: $usertype, approved: $approved, email: $email, uid: $uid, firstName: $firstName, lastName: $lastName, contact: $contact, department: $department, teacherId: $teacherId, initials: $initials, designation: $designation, studentId: $studentId, section: $section, batch: $batch, photoUrl: $photoUrl, isHod: $isHod, pushToken: $pushToken}';
   }
+
+  bool get isLoggedin => uid.isNotEmpty;
 }

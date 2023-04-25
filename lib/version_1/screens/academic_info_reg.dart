@@ -24,11 +24,6 @@ class _AcademicInfoScreenState extends ConsumerState<AcademicInfoScreen> {
   @override
   void initState() {
     super.initState();
-    final next = ref.watch(userProvider
-        .select((value) => value.status == Status.academicInfoDone));
-    if (next) {
-      Navigator.pushNamed(context, SetPasswordScreen.routeName);
-    }
   }
 
   @override

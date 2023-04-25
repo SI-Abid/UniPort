@@ -29,15 +29,12 @@ class UserProvider extends StateNotifier<UserModel> {
   }) : super(UserModel());
 
   Future<void> logout() async {
-    state.status = Status.loading;
     await googleSignIn.signOut();
     updateOnlineStatus(false);
     state = UserModel();
-    state.status = Status.loggedOut;
   }
 
   Future<void> loginWithEmail(String email, String password) async {
-    state.status = Status.loading;
     try {
       User? user = (await auth.signInWithEmailAndPassword(
               email: email, password: password))
@@ -56,7 +53,6 @@ class UserProvider extends StateNotifier<UserModel> {
       // *** NAVIGATE TO HOME SCREEN ***
       // DONE: Navigate to home screen
       state = UserModel.fromJson(result.data()! as Map<String, dynamic>);
-      state.status = Status.loggedIn;
       return;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -76,7 +72,6 @@ class UserProvider extends StateNotifier<UserModel> {
       // *** USER CANCELLED SIGN IN ***
       return;
     }
-    state.status = Status.loading;
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -103,18 +98,15 @@ class UserProvider extends StateNotifier<UserModel> {
       // *** NEW USER ***
       // *** NAVIGATE TO SIGN UP SCREEN ***
       // DONE: Navigate to sign up screen
-      state.status = Status.newUser;
       return;
     }
     // *** EXISTING USER ***
     // *** NAVIGATE TO HOME SCREEN ***
     state = UserModel.fromJson(documents[0].data()! as Map<String, dynamic>);
-    state.status = Status.loggedIn;
     return;
   }
 
   Future<void> registerUser({required String password}) async {
-    state.status = Status.loading;
     try {
       var user = auth.currentUser;
       if (user != null) {
@@ -141,7 +133,6 @@ class UserProvider extends StateNotifier<UserModel> {
         }
         await user.updatePassword(password);
         firestore.collection('users').doc(user.uid).set(state.toJson());
-        state.status = Status.registrationDone;
         return;
       }
       final creds =
@@ -158,7 +149,6 @@ class UserProvider extends StateNotifier<UserModel> {
       }
       await user.updatePassword(password);
       firestore.collection('users').doc(user.uid).set(state.toJson());
-      state.status = Status.registrationDone;
       return;
     } catch (e) {
       Fluttertoast.showToast(msg: 'Registration failed');
@@ -168,13 +158,11 @@ class UserProvider extends StateNotifier<UserModel> {
 
   void setPersonalInfo(UserModel tmpUser) async {
     state.copyWith(tmpUser);
-    state.status = Status.personalInfoDone;
     return;
   }
 
   void setAcademicInfo(UserModel tmpUser) async {
     state.copyWith(tmpUser);
-    state.status = Status.academicInfoDone;
     return;
   }
 

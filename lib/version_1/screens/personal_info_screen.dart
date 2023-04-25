@@ -14,11 +14,6 @@ class PersonalInfoScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final next = ref.watch(userProvider
-        .select((value) => value.status == Status.personalInfoDone));
-    if (next) {
-      Navigator.pushNamed(context, AcademicInfoScreen.routeName);
-    }
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 35,

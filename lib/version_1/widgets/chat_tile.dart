@@ -1,21 +1,22 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/models.dart';
+import '../providers/user_provider.dart';
 import '../screens/message_screen.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
 
-class ChatTile extends StatelessWidget {
+class ChatTile extends ConsumerWidget {
   const ChatTile({super.key, required this.message, required this.otherUser});
 
   final Message message;
   final UserModel otherUser;
 
   @override
-  Widget build(BuildContext context) {
-    bool isMe = message.sender == FirebaseAuth.instance.currentUser!.uid;
+  Widget build(BuildContext context, WidgetRef ref) {
+    bool isMe = message.sender == ref.watch(userProvider).uid;
     // print('${lastMsg.sender} ${loggedInUser.uid}');
     bool isUnread = message.readAt == null && !isMe;
     return Container(

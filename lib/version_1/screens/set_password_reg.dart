@@ -15,12 +15,6 @@ class SetPasswordScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final next = ref.watch(userProvider
-        .select((value) => value.status == Status.registrationDone));
-    if (next) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, LoginScreen.routeName, (route) => false);
-    }
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 35,

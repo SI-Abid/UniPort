@@ -89,49 +89,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(
-            height: 6,
-          ),
-          isSearching ? _getSearchList() : _getChatList(allUsers),
+          ChatList(allUsers: allUsers),
+          if (isSearching) _getSearchList(),
         ],
       ),
       backgroundColor: const Color(0xfff5f5f5),
     );
   }
 
-  Expanded _getChatList(userList) {
-    final stream = ref.watch(chatControllerProvider).lastMessageStream();
-    // print(data.length);
-    return Expanded(
-      child: StreamBuilder(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData == false) {
-            return const Center(child: Text('No chats yet'));
-          }
-          return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) => StreamBuilder(
-                    stream: snapshot.data![index],
-                    builder: (context, snapshot) {
-                      if (snapshot.data == null) {
-                        return const SizedBox.shrink();
-                      }
-                      final lastMessage = snapshot.data;
-                      return ChatTile(
-                          message: lastMessage!.message,
-                          otherUser: lastMessage.user);
-                    },
-                  ));
-        },
-      ),
-    );
-  }
-
-  Expanded _getSearchList() {
-    return Expanded(
+  Widget _getSearchList() {
+    return Container(
+      color: Colors.white,
+      height: double.infinity,
       child: ListView.builder(
         physics: const BouncingScrollPhysics(),
         itemCount: filteredUsers.length,
@@ -164,6 +135,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ChatList extends ConsumerWidget {
+  final List<UserModel> allUsers;
+
+  const ChatList({super.key, required this.allUsers});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: double.infinity,
+      child: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('chats')
+            .where('members', arrayContains: ref.read(userProvider).uid)
+            .orderBy('lastMessageAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final List<QueryDocumentSnapshot> chats = snapshot.data!.docs;
+            return ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              itemCount: chats.length,
+              separatorBuilder: (context, index) => const Divider(
+                height: 1,
+              ),
+              itemBuilder: (context, index) {
+                final stream = chats[index]
+                    .reference
+                    .collection('messages')
+                    .orderBy('createdAt', descending: true)
+                    .limit(1)
+                    .snapshots();
+                return StreamBuilder(
+                  stream: stream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final messageMap = snapshot.data!.docs.first.data();
+                      final message = Message.fromJson(messageMap);
+                      final otherId = message.chatId
+                          .replaceAll(ref.read(userProvider).uid, '');
+                      final other = allUsers
+                          .firstWhere((element) => element.uid == otherId);
+                      return ChatTile(message: message, otherUser: other);
+                    }
+                    return const SizedBox.shrink();
+                  },
+                );
+              },
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
           );
         },
       ),
