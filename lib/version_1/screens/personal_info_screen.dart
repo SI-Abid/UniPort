@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/screens/academic_info_reg.dart';
 
 import '../models/user.dart';
 import '../providers/user_provider.dart';

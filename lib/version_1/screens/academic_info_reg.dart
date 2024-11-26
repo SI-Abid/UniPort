@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uniport/version_1/providers/user_provider.dart';
-import 'package:uniport/version_1/screens/set_password_reg.dart';
 
-import '../models/user.dart';
 import '../widgets/academic_info_tapbar.dart';
 import '../widgets/color_constant.dart';
 import '../widgets/student_info_body.dart';

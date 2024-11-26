@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../models/user.dart';
 import '../providers/user_provider.dart';
 import '../services/helper.dart';
 import '../widgets/widgets.dart';
-import 'screens.dart';
 
 class SetPasswordScreen extends ConsumerWidget {
   static const String routeName = '/set-password';
